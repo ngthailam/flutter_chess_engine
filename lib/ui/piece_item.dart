@@ -64,7 +64,9 @@ class PieceItem extends StatelessWidget {
         ),
         width: size,
         height: size,
-        child: piece != null ? Center(child: PieceImage(piece: piece!)) : null,
+        child: piece != null
+            ? Center(child: PieceImage(piece: piece!))
+            : Center(child: Text('$xCoord-$yCoord')),
       ),
     );
   }

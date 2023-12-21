@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:chess_engine/engine/engine.dart';
 import 'package:chess_engine/game/game.dart';
 import 'package:chess_engine/game/piece.dart';
 import 'package:chess_engine/game/utils.dart';
@@ -13,10 +16,41 @@ class GamePage extends StatefulWidget {
 
 class _MyHomePageState extends State<GamePage> {
   final Game game = Game();
+  final Engine engine = Engine();
 
   Coordinate? focusedCoord;
 
-  List<Coordinate> validMoves = [];
+  Set<Coordinate> validMoves = {};
+
+  StreamSubscription? _winnerStreamSub;
+  StreamSubscription? _turnStreamSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _winnerStreamSub = game.winnerStreamCtrl.stream.listen((event) {
+      if (event != null && mounted) {
+        setState(() {});
+      }
+    });
+
+    _turnStreamSub = game.turnStreamCtrl.stream.listen((event) {
+      if (event == engine.side) {
+        engine.move(game);
+      }
+
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _winnerStreamSub?.cancel();
+    _turnStreamSub?.cancel();
+    super.dispose();
+  }
 
   PieceItemStatus _getPieceStatus(
     Piece? piece,
@@ -40,42 +74,59 @@ class _MyHomePageState extends State<GamePage> {
     return PieceItemStatus.none;
   }
 
+  void _onNewFocus(Coordinate newFocusedCoord) {
+    focusedCoord = newFocusedCoord;
+    validMoves = game.getValidMoveCoords(newFocusedCoord);
+  }
+
+  void _resetFocus() {
+    focusedCoord = null;
+    validMoves = {};
+  }
+
+  void _onPieceTapped(Piece? piece, int x, int y) {
+    // When click empty square, nothing happens
+    if (game.winner != null) {
+      return;
+    }
+    if (focusedCoord == null && piece == null) {
+      return;
+    }
+
+    final newFocusedCoord = Coordinate(x, y);
+    final pieceAtNewFocusedCoord = game.getAtCoord(newFocusedCoord);
+
+    if (focusedCoord == null) {
+      if (pieceAtNewFocusedCoord?.side == game.currentSide) {
+        _onNewFocus(newFocusedCoord);
+      }
+    } else {
+      if (focusedCoord != newFocusedCoord) {
+        final pieceAtNewCoord = game.getAtCoord(newFocusedCoord);
+        final pieceAtFocusedCoord = game.getAtCoord(focusedCoord!);
+        if (pieceAtNewCoord != null &&
+            pieceAtFocusedCoord?.isSameSide(pieceAtNewCoord) == true) {
+          _onNewFocus(newFocusedCoord);
+        } else {
+          game.move(focusedCoord!, newFocusedCoord);
+          _resetFocus();
+          // To avoid double setState
+          return;
+        }
+      } else {
+        _resetFocus();
+      }
+    }
+
+    setState(() {});
+  }
+
   Widget _pieceWidget({required int x, required int y}) {
     final piece = game.getAtXy(x, y);
 
     return PieceItem(
-      key: Key('$x-$y-$piece'),
-      onTap: () {
-        // When click empty square, nothing happens
-        if (focusedCoord == null && piece == null) {
-          return;
-        }
-        final newFocusedCoord = Coordinate(x, y);
-        final pieceAtNewFocusedCoord = game.getAtCoord(newFocusedCoord);
-
-        if (focusedCoord == null) {
-          if (pieceAtNewFocusedCoord?.side == game.currentTurn) {
-            focusedCoord = newFocusedCoord;
-            validMoves = game.getValidMoves(Coordinate(x, y));
-          }
-        } else {
-          if (focusedCoord != newFocusedCoord) {
-            final pieceAtNewCoord = game.getAtCoord(newFocusedCoord);
-            if (pieceAtNewCoord != null &&
-                piece?.isSameSide(pieceAtNewCoord) != true) {
-              focusedCoord = newFocusedCoord;
-              validMoves = game.getValidMoves(Coordinate(x, y));
-            } else {
-              game.move(focusedCoord!, newFocusedCoord);
-            }
-          }
-
-          focusedCoord = null;
-          validMoves = [];
-        }
-
-        setState(() {});
-      },
+      key: Key('$x-$y'),
+      onTap: () => _onPieceTapped(piece, x, y),
       xCoord: x,
       yCoord: y,
       status: _getPieceStatus(piece, x, y),
@@ -108,8 +159,10 @@ class _MyHomePageState extends State<GamePage> {
             const SizedBox(height: 16),
             _board(),
             const SizedBox(height: 16),
-            Text('Current turn: ${game.currentTurn.name}'),
+            Text('Current turn: ${game.currentSide.name}'),
             Text('Turn count: ${game.turnCount}'),
+            if (game.winner != null)
+              Text('🎉🎉🎉 Winner: ${game.winner!.name.toUpperCase()} 🎉🎉🎉'),
           ],
         ),
       ),

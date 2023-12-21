@@ -6,9 +6,10 @@ abstract class Piece {
   bool isMoved;
 
   // Possible move directions of a piece
-  List<Coordinate> get moveCoordinates;
+  List<Coordinate> get moveCoords;
 
-  List<Coordinate> get additionalCaptureCoordinates => [];
+  // For pieces with capture coords different from move coords
+  List<Coordinate> get alternateCaptureCoords => [];
 
   // Determine a Piece moves in a ray (continuous in given moveVectors) or not.
   bool get isMoveRay;
@@ -37,7 +38,7 @@ class Rook extends Piece {
   bool get isMoveRay => true;
 
   @override
-  List<Coordinate> get moveCoordinates => [
+  List<Coordinate> get moveCoords => [
         Coordinate(-1, 0), // Left
         Coordinate(1, 0), // Right
         Coordinate(0, 1), // Down
@@ -52,7 +53,7 @@ class Knight extends Piece {
   bool get isMoveRay => false;
 
   @override
-  List<Coordinate> get moveCoordinates => [
+  List<Coordinate> get moveCoords => [
         Coordinate(1, 2), // Top right
         Coordinate(2, 1), // Right top
         Coordinate(2, -1), // Right bot
@@ -71,7 +72,7 @@ class Bishop extends Piece {
   bool get isMoveRay => true;
 
   @override
-  List<Coordinate> get moveCoordinates => [
+  List<Coordinate> get moveCoords => [
         Coordinate(1, 1), // Top right
         Coordinate(1, -1), // Bot right
         Coordinate(-1, -1), // Bot left
@@ -86,7 +87,7 @@ class King extends Piece {
   bool get isMoveRay => false;
 
   @override
-  List<Coordinate> get moveCoordinates => [
+  List<Coordinate> get moveCoords => [
         // Verticals/Horizontals
         Coordinate(-1, 0), // Left
         Coordinate(1, 0), // Right
@@ -107,7 +108,7 @@ class Queen extends Piece {
   bool get isMoveRay => true;
 
   @override
-  List<Coordinate> get moveCoordinates => [
+  List<Coordinate> get moveCoords => [
         // Verticals/Horizontals
         Coordinate(-1, 0), // Left
         Coordinate(1, 0), // Right
@@ -128,7 +129,7 @@ class Pawn extends Piece {
   bool get isMoveRay => false;
 
   @override
-  List<Coordinate> get additionalCaptureCoordinates {
+  List<Coordinate> get alternateCaptureCoords {
     final List<Coordinate> moves = [];
 
     if (isWhite()) {
@@ -143,7 +144,7 @@ class Pawn extends Piece {
   }
 
   @override
-  List<Coordinate> get moveCoordinates {
+  List<Coordinate> get moveCoords {
     final List<Coordinate> moves = [];
 
     // TODO: add en-passant

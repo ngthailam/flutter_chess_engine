@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chess_engine/game/utils.dart';
 import 'package:chess_engine/game/piece.dart';
 import 'package:chess_engine/utils/logger.dart';
@@ -10,14 +12,17 @@ class GameConsts {
 class Game {
   List<List<Piece?>> board = List.from(initialBoard);
 
-  Side currentTurn = Side.white;
+  Side currentSide = Side.white;
 
   int turnCount = 1;
 
-  Set<Coordinate> _attackingCoords = Set();
+  Side? winner;
 
-  void initialize() {
-    board = List.from(initialBoard);
+  StreamController<Side?> winnerStreamCtrl = StreamController();
+  StreamController<Side?> turnStreamCtrl = StreamController();
+
+  void initialize(List<List<Piece?>>? mBoard) {
+    board = List.from(mBoard ?? initialBoard);
   }
 
   List<Coordinate> _getValidRayMoves(
@@ -46,30 +51,86 @@ class Game {
     return moves;
   }
 
-  List<Coordinate> getValidMoves(Coordinate coordinate) {
+  Set<Coordinate> getValidMoveCoords(
+    Coordinate coordinate, {
+    bool checkKingSafety = true,
+  }) {
     final piece = getAtCoord(coordinate);
-    if (piece == null) return [];
+    if (piece == null) return {};
 
-    final List<Coordinate> moves = [];
+    final Set<Coordinate> moves = {};
 
-    for (var moveCoord in piece.moveCoordinates) {
+    for (var moveCoord in piece.moveCoords) {
       if (piece.isMoveRay) {
         moves.addAll(_getValidRayMoves(piece, coordinate, moveCoord));
       } else {
         final newCoord = coordinate.add(moveCoord);
-        if (isCoordInsideBoard(newCoord) &&
-            isCoordEmptyAndNotSameSide(piece, newCoord)) {
+        if (!isCoordInsideBoard(newCoord)) {
+          continue;
+        }
+
+        if (isCoordEmpty(newCoord) ||
+            (isCoordOppositeSide(piece, newCoord) &&
+                piece.alternateCaptureCoords.isEmpty)) {
           moves.add(newCoord);
         }
       }
     }
 
-    for (var addCaptureCoord in piece.additionalCaptureCoordinates) {
+    for (var addCaptureCoord in piece.alternateCaptureCoords) {
       final newCoord = coordinate.add(addCaptureCoord);
       if (isCoordInsideBoard(newCoord) &&
           isCoordOppositeSide(piece, newCoord)) {
         moves.add(coordinate.add(addCaptureCoord));
       }
+    }
+
+    if (moves.isNotEmpty && checkKingSafety) {
+      Logger.d('getValidMoveCoords, piece=$piece, moves=$moves');
+
+      // TODO: add if king is attacked + piece is not king => return false
+      final kingCoords = findKingCoords(currentSide);
+      if (kingCoords == null) {
+        // Something went wrong here
+        Logger.e('Cannot find king coords for side=$currentSide');
+        return {};
+      }
+
+      /// EG: After White move, calculate all the positions white can attack in the next turn
+      /// Then on next turn, if Black king is in 1 of those squares, or it want to move to 1 of those squares
+      /// then dissallow it, only allow 2 things:
+      /// - Black King move/not move to an unattacked square
+      /// - Black moves a piece, if it defends the King, then OK
+      final otherSide = currentSide.getOtherSide();
+      // TODO: moves to be removed, cannot remove 1 item by 1 from a Set while iterating through it
+      final List<Coordinate> coordsToRemoved = [];
+      for (int m = 0; m < moves.length; m++) {
+        Logger.d(
+            'Checking King danger if piece=$piece, targetMove=${moves.elementAt(m)}');
+
+        final targetMoveCoord = moves.elementAt(m);
+
+        final otherSideAttackingCoords =
+            getAllAttackingMovesBySideProposedBoard(
+          otherSide,
+          piece,
+          coordinate,
+          targetMoveCoord,
+        );
+
+        if (otherSideAttackingCoords.contains(kingCoords)) {
+          Logger.d('Removing coords from possible move $targetMoveCoord');
+          coordsToRemoved.add(targetMoveCoord);
+        }
+
+        if (piece is King &&
+            otherSideAttackingCoords.contains(targetMoveCoord)) {
+          Logger.d('Removing coords from possible move $targetMoveCoord');
+          coordsToRemoved.add(targetMoveCoord);
+        }
+      }
+
+      moves.removeAll(coordsToRemoved);
     }
 
     return moves;
@@ -124,9 +185,9 @@ class Game {
       return false;
     }
 
-    if (currentTurn != piece.side) {
+    if (currentSide != piece.side) {
       Logger.e(
-          'Invalid move, not piece turn, piece=$piece, currentTurn=$currentTurn');
+          'Invalid move, not piece turn, piece=$piece, currentTurn=$currentSide');
       return false;
     }
 
@@ -136,19 +197,8 @@ class Game {
       return false;
     }
 
-    // TODO: add if king is attacked + piece is not king => return false
-    final kingCoords = findKingCoords(currentTurn);
-    if (kingCoords == null) {
-      // Something went wrong here
-      Logger.e('Cannot find king coords for side=$currentTurn');
-      return false;
-    }
-    if (_attackingCoords.contains(kingCoords)) {
-      // King is being attacked:
-      // Check if after any move move, king is still in _attackingCoords, then returns false
-    }
+    Set<Coordinate> validMoves = getValidMoveCoords(pieceCoord);
 
-    List<Coordinate> validMoves = getValidMoves(pieceCoord);
     if (!validMoves.contains(targetCoord)) {
       Logger.e(
           'Invalid move set, targetCoord=$targetCoord, validMoves=$validMoves}');
@@ -161,38 +211,106 @@ class Game {
     board[targetCoord.x][targetCoord.y] = piece..isMoved = true;
     turnCount += 1;
 
-    /// EG: After White move, calculate all the positions white can attack in the next turn
-    /// Then on next turn, if Black king is in 1 of those squares, or it want to move to 1 of those squares
-    /// then dissallow it, only allow 2 things:
-    /// - Black King move/not move to an unattacked square
-    /// - Black moves a piece, if it defends the King, then OK
-    _setThisSidePossibleMovesForNextTurn();
+    /// After a move, check if see is checkmate
+    if (isCheckMate()) {
+      // Notify
+      Logger.d(
+          '${currentSide.name.toUpperCase()} is the Winner. Congratulations! \n 🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉');
+      winner = currentSide;
+      winnerStreamCtrl.sink.add(winner);
+    }
 
     changeTurn();
     return true;
   }
 
-  void _setThisSidePossibleMovesForNextTurn() {
-    _attackingCoords.clear();
-
+  List<Coordinate> getAllCoordsBySide(Side side) {
+    final List<Coordinate> coordinates = [];
     for (int i = 0; i < GameConsts.itemPerRow; i++) {
       for (int j = 0; j < GameConsts.itemPerRow; j++) {
         final piece = getAtXy(i, j);
-        if (piece?.side == currentTurn) {
-          final moves = getValidMoves(Coordinate(i, j));
-          _attackingCoords.addAll(moves);
+        if (piece != null && piece.side == side) {
+          coordinates.add(Coordinate(i, j));
         }
       }
     }
+
+    return coordinates;
+  }
+
+  bool isCheckMate() {
+    final tempGame = createTempGame();
+    final Set<Coordinate> allMoves = {};
+
+    // TODO: Do a very stupid + crud check
+    // TODO: check for double checks
+    final coordinateList =
+        tempGame.getAllCoordsBySide(currentSide.getOtherSide());
+
+    for (var coordinate in coordinateList) {
+      final moves = tempGame.getValidMoveCoords(
+        coordinate,
+        checkKingSafety: true,
+      );
+      allMoves.addAll(moves);
+    }
+
+    Logger.d(
+        'Checking checkmate for ${currentSide.getOtherSide()} : possibleMovesLeft=$allMoves');
+    return allMoves.isEmpty;
+  }
+
+  Game createTempGame() {
+    final List<List<Piece?>> tempBoard = [];
+    for (var element in board) {
+      final List<Piece?> newList = [];
+      for (var e in element) {
+        newList.add(e);
+      }
+
+      tempBoard.add(newList);
+    }
+
+    return Game()..initialize(tempBoard);
+  }
+
+  Set<Coordinate> getAllAttackingMovesBySideProposedBoard(
+    Side side,
+    Piece movedPiece,
+    Coordinate movedPieceCurrentCoord,
+    Coordinate movedPieceNewCoord,
+  ) {
+    Logger.d(
+        'getAllAttackingMovesBySideProposedBoard piece=$movedPiece, target=$movedPieceNewCoord ======>>>>>>>>');
+    final Set<Coordinate> allMoves = {};
+
+    // TODO: might need to refactor this
+    // move generateMoveCoords out of game
+    Game tempGame = createTempGame();
+    tempGame.board[movedPieceCurrentCoord.x][movedPieceCurrentCoord.y] = null;
+    tempGame.board[movedPieceNewCoord.x][movedPieceNewCoord.y] = movedPiece;
+
+    visualizeBoard(tempGame.board);
+
+    final coordinateList = tempGame.getAllCoordsBySide(side);
+
+    for (var coordinate in coordinateList) {
+      final moves = tempGame.getValidMoveCoords(
+        coordinate,
+        checkKingSafety: false,
+      );
+      allMoves.addAll(moves);
+    }
+
+    Logger.d('getAllAttackingMovesBySideProposedBoard allMoves=$allMoves');
+    return allMoves;
   }
 
   Coordinate? findKingCoords(Side side) {
-    for (int i = 0; i < GameConsts.itemPerRow; i++) {
-      for (int j = 0; j < GameConsts.itemPerRow; j++) {
-        final piece = getAtXy(i, j);
-        if (piece is King && piece.side == side) {
-          return Coordinate(i, j);
-        }
+    final pieces = getAllCoordsBySide(side);
+    for (var coordinate in pieces) {
+      if (getAtCoord(coordinate) is King) {
+        return coordinate;
       }
     }
 
@@ -200,7 +318,21 @@ class Game {
   }
 
   void changeTurn() {
-    currentTurn = currentTurn == Side.white ? Side.black : Side.white;
+    currentSide = currentSide.getOtherSide();
+    turnStreamCtrl.sink.add(currentSide);
+  }
+
+  void visualizeBoard(List<List<Piece?>> targetBoard) {
+    return;
+    Logger.d('==============================================================');
+    for (int i = 0; i < GameConsts.itemPerRow; i++) {
+      String rowStr = '';
+      for (int j = 0; j < GameConsts.itemPerRow; j++) {
+        rowStr += targetBoard[i][j] == null ? ' x ' : ' ${targetBoard[i][j]} ';
+      }
+      Logger.d(rowStr);
+    }
+    Logger.d('==============================================================');
   }
 
   void test() {

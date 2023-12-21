@@ -32,6 +32,8 @@ enum Side {
 
   bool isWhite() => this == white;
   bool isBlack() => this == black;
+
+  Side getOtherSide() => isWhite() ? Side.black : Side.white;
 }
 
 List<List<Piece?>> initialBoard = [
