@@ -118,15 +118,16 @@ class Game {
           targetMoveCoord,
         );
 
-        if (otherSideAttackingCoords.contains(kingCoords)) {
-          Logger.d('Removing coords from possible move $targetMoveCoord');
-          coordsToRemoved.add(targetMoveCoord);
-        }
-
-        if (piece is King &&
-            otherSideAttackingCoords.contains(targetMoveCoord)) {
-          Logger.d('Removing coords from possible move $targetMoveCoord');
-          coordsToRemoved.add(targetMoveCoord);
+        if (piece is King) {
+          if (otherSideAttackingCoords.contains(targetMoveCoord)) {
+            Logger.d('Removing coords from possible move $targetMoveCoord');
+            coordsToRemoved.add(targetMoveCoord);
+          }
+        } else {
+          if (otherSideAttackingCoords.contains(kingCoords)) {
+            Logger.d('Removing coords from possible move $targetMoveCoord');
+            coordsToRemoved.add(targetMoveCoord);
+          }
         }
       }
 
@@ -216,8 +217,8 @@ class Game {
       // Notify
       Logger.d(
           '${currentSide.name.toUpperCase()} is the Winner. Congratulations! \n 🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉');
-      winner = currentSide;
-      winnerStreamCtrl.sink.add(winner);
+      // winner = currentSide;
+      // winnerStreamCtrl.sink.add(winner);
     }
 
     changeTurn();
@@ -248,10 +249,14 @@ class Game {
         tempGame.getAllCoordsBySide(currentSide.getOtherSide());
 
     for (var coordinate in coordinateList) {
+      final piece = getAtCoord(coordinate);
       final moves = tempGame.getValidMoveCoords(
         coordinate,
         checkKingSafety: true,
       );
+      if (piece is King) {
+        print('========>>>>>>>> $moves');
+      }
       allMoves.addAll(moves);
     }
 
@@ -323,19 +328,16 @@ class Game {
   }
 
   void visualizeBoard(List<List<Piece?>> targetBoard) {
-    return;
     Logger.d('==============================================================');
     for (int i = 0; i < GameConsts.itemPerRow; i++) {
       String rowStr = '';
       for (int j = 0; j < GameConsts.itemPerRow; j++) {
-        rowStr += targetBoard[i][j] == null ? ' x ' : ' ${targetBoard[i][j]} ';
+        rowStr += targetBoard[i][j] == null
+            ? ' x x '
+            : ' ${targetBoard[i][j]!.toShortString()} ';
       }
       Logger.d(rowStr);
     }
     Logger.d('==============================================================');
-  }
-
-  void test() {
-    print(board);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:chess_engine/game/utils.dart';
+import 'package:flutter/material.dart';
 
 abstract class Piece {
   final Side side;
@@ -28,6 +29,10 @@ abstract class Piece {
   @override
   String toString() {
     return '${side.name.toUpperCase()} ${runtimeType.toString()}';
+  }
+
+  String toShortString() {
+    return '${side.name.characters.characterAt(0).toUpperCase()} ${runtimeType.toString().characters.characterAt(0).toUpperCase()}';
   }
 }
 

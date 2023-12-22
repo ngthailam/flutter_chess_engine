@@ -23,7 +23,7 @@ class Coordinate {
   }
 
   @override
-  int get hashCode => (x.hashCode * 32) + (y.hashCode * 32);
+  int get hashCode => "$x$y".hashCode;
 }
 
 enum Side {
