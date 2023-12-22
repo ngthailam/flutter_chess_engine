@@ -1,10 +1,7 @@
-import 'dart:math';
-
 import 'package:chess_engine/engine/minimax.dart';
 import 'package:chess_engine/game/game.dart';
 import 'package:chess_engine/game/move_generator.dart';
 import 'package:chess_engine/game/utils.dart';
-import 'package:chess_engine/utils/extensions.dart';
 import 'package:chess_engine/utils/logger.dart';
 
 class Engine {
@@ -29,34 +26,5 @@ class Engine {
       output.boardAndMoveSet.pieceCoord,
       output.boardAndMoveSet.targetPieceCoord,
     );
-  }
-
-  //// For random stuffs
-  Future _moveRandomly(Game game) async {
-    final pieceCoordinateList = game.board.getAllCoordsBySide(side);
-
-    final Map<Coordinate, Set<Coordinate>> moveSet = {};
-
-    await Future.delayed(const Duration(seconds: 1));
-
-    for (var coordinate in pieceCoordinateList) {
-      final moves = game.getValidMoveCoords(
-        coordinate,
-        checkKingSafety: true,
-      );
-
-      if (moves.isNotEmpty) {
-        moveSet[coordinate] = moves;
-      }
-    }
-
-    final randomKey = moveSet.randomKey();
-    final keyCoordinateList = moveSet[randomKey];
-    final randomMove = keyCoordinateList!
-        .elementAt(Random().nextInt(keyCoordinateList.length));
-
-    Logger.d(
-        'Engine moving... piece=${game.board.getAtCoord(randomKey)}, move=$randomMove');
-    game.move(randomKey, randomMove);
   }
 }
