@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 abstract class Piece {
   final Side side;
 
-  bool isMoved;
-
   // Possible move directions of a piece
   List<Coordinate> get moveCoords;
+
+// Possible move directions of a piece on first move
+  List<Coordinate> get firstMoveCoords => moveCoords;
 
   // For pieces with capture coords different from move coords
   List<Coordinate> get alternateCaptureCoords => [];
@@ -24,7 +25,9 @@ abstract class Piece {
 
   bool isSameSide(Piece otherPiece) => side == otherPiece.side;
 
-  Piece({required this.side, required this.isMoved});
+  int get baseValue;
+
+  Piece({required this.side});
 
   @override
   String toString() {
@@ -37,7 +40,10 @@ abstract class Piece {
 }
 
 class Rook extends Piece {
-  Rook({required super.side}) : super(isMoved: false);
+  Rook({required super.side});
+
+  @override
+  int get baseValue => 5;
 
   @override
   bool get isMoveRay => true;
@@ -52,7 +58,10 @@ class Rook extends Piece {
 }
 
 class Knight extends Piece {
-  Knight({required super.side}) : super(isMoved: false);
+  Knight({required super.side});
+
+  @override
+  int get baseValue => 2;
 
   @override
   bool get isMoveRay => false;
@@ -71,7 +80,10 @@ class Knight extends Piece {
 }
 
 class Bishop extends Piece {
-  Bishop({required super.side}) : super(isMoved: false);
+  Bishop({required super.side});
+
+  @override
+  int get baseValue => 3;
 
   @override
   bool get isMoveRay => true;
@@ -86,7 +98,10 @@ class Bishop extends Piece {
 }
 
 class King extends Piece {
-  King({required super.side}) : super(isMoved: false);
+  King({required super.side});
+
+  @override
+  int get baseValue => 999;
 
   @override
   bool get isMoveRay => false;
@@ -107,7 +122,10 @@ class King extends Piece {
 }
 
 class Queen extends Piece {
-  Queen({required super.side}) : super(isMoved: false);
+  Queen({required super.side});
+
+  @override
+  int get baseValue => 9;
 
   @override
   bool get isMoveRay => true;
@@ -128,7 +146,10 @@ class Queen extends Piece {
 }
 
 class Pawn extends Piece {
-  Pawn({required super.side}) : super(isMoved: false);
+  Pawn({required super.side});
+
+  @override
+  int get baseValue => 1;
 
   @override
   bool get isMoveRay => false;
@@ -149,24 +170,30 @@ class Pawn extends Piece {
   }
 
   @override
+  List<Coordinate> get firstMoveCoords {
+    final List<Coordinate> moves = moveCoords;
+
+    if (isWhite()) {
+      // 2 up on first move
+      moves.add(Coordinate(0, 2));
+    } else {
+      // 2 down on first move
+      moves.add(Coordinate(0, -2));
+    }
+
+    return moves;
+  }
+
+  @override
   List<Coordinate> get moveCoords {
     final List<Coordinate> moves = [];
 
-    // TODO: add en-passant
     if (isWhite()) {
       // 1 up
       moves.add(Coordinate(0, 1));
-      if (!isMoved) {
-        // 2 up on first move
-        moves.add(Coordinate(0, 2));
-      }
     } else {
       // 1 down
       moves.add(Coordinate(0, -1));
-      if (!isMoved) {
-        // 2 down on first move
-        moves.add(Coordinate(0, -2));
-      }
     }
 
     return moves;

@@ -30,14 +30,15 @@ class _MyHomePageState extends State<GamePage> {
     super.initState();
     _winnerStreamSub = game.winnerStreamCtrl.stream.listen((event) {
       if (event != null && mounted) {
+        _turnStreamSub?.cancel();
         setState(() {});
       }
     });
 
     _turnStreamSub = game.turnStreamCtrl.stream.listen((event) {
-      // if (event == engine.side) {
-      //   engine.move(game);
-      // }
+      if (event == engine.side) {
+        engine.move(game);
+      }
 
       if (mounted) {
         setState(() {});
@@ -94,7 +95,7 @@ class _MyHomePageState extends State<GamePage> {
     }
 
     final newFocusedCoord = Coordinate(x, y);
-    final pieceAtNewFocusedCoord = game.getAtCoord(newFocusedCoord);
+    final pieceAtNewFocusedCoord = game.board.getAtCoord(newFocusedCoord);
 
     if (focusedCoord == null) {
       if (pieceAtNewFocusedCoord?.side == game.currentSide) {
@@ -102,8 +103,8 @@ class _MyHomePageState extends State<GamePage> {
       }
     } else {
       if (focusedCoord != newFocusedCoord) {
-        final pieceAtNewCoord = game.getAtCoord(newFocusedCoord);
-        final pieceAtFocusedCoord = game.getAtCoord(focusedCoord!);
+        final pieceAtNewCoord = game.board.getAtCoord(newFocusedCoord);
+        final pieceAtFocusedCoord = game.board.getAtCoord(focusedCoord!);
         if (pieceAtNewCoord != null &&
             pieceAtFocusedCoord?.isSameSide(pieceAtNewCoord) == true) {
           _onNewFocus(newFocusedCoord);
@@ -122,7 +123,7 @@ class _MyHomePageState extends State<GamePage> {
   }
 
   Widget _pieceWidget({required int x, required int y}) {
-    final piece = game.getAtXy(x, y);
+    final piece = game.board.getAtXy(x, y);
 
     return PieceItem(
       key: Key('$x-$y'),
@@ -137,8 +138,8 @@ class _MyHomePageState extends State<GamePage> {
   List<Widget> _getColumnWidgets() {
     final List<Widget> widgets = [];
 
-    for (int i = 0; i < game.board.length; i++) {
-      final row = game.board[i];
+    for (int i = 0; i < game.board.data.length; i++) {
+      final row = game.board.data[i];
       final List<Widget> widgetsEachRow = [];
       for (int j = row.length - 1; j >= 0; j--) {
         widgetsEachRow.add(_pieceWidget(x: i, y: j));
