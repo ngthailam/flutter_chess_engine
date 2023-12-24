@@ -29,14 +29,15 @@ class Game {
       coordinate,
       currentSide,
       checkKingSafety: checkKingSafety,
-      isFirstMove: moveMap[board.getAtCoord(coordinate)] == null,
+      isFirstMove: moveMap[board.getAtCoord(coordinate)?.identifier] == null,
     );
   }
 
-  final Map<Piece, bool> moveMap = {};
+  // This is very temporary, we need IDs for individual pieces
+  final Map<PieceIdentifier, bool> moveMap = {};
 
   bool move(Coordinate pieceCoord, Coordinate targetCoord) {
-    final piece = board.getAtCoord(pieceCoord);
+    Piece? piece = board.getAtCoord(pieceCoord);
     Logger.d(
         'Move, pieceCoord=$pieceCoord, piece=$piece, targetCoord=$targetCoord');
 
@@ -68,8 +69,27 @@ class Game {
       return false;
     }
 
+    // Handle promotion here
+    // Check if reached the final place, then do shits here
+    if (piece is Pawn) {
+      // TODO: for now, automatically promote to queen
+      if (piece.isWhite() && targetCoord.y == BoardConsts.maxIndex) {
+        piece = Queen(
+          side: Side.white,
+          identifier: DateTime.now().millisecondsSinceEpoch.toString(),
+        );
+        board.updateCoordWithPiece(pieceCoord, piece);
+      } else if (!piece.isWhite() && targetCoord.y == 0) {
+        piece = Queen(
+          side: Side.black,
+          identifier: DateTime.now().millisecondsSinceEpoch.toString(),
+        );
+        board.updateCoordWithPiece(pieceCoord, piece);
+      }
+    }
+
     board.moveToCoord(pieceCoord, targetCoord);
-    moveMap[piece] = true;
+    moveMap[piece.identifier] = true;
     turnCount += 1;
 
     /// After a move, check if see is checkmate

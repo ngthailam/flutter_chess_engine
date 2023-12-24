@@ -16,7 +16,7 @@ class Board {
   ) {
     List<List<Piece?>> tempData = List.generate(BoardConsts.itemPerRow,
         (index) => List.generate(BoardConsts.itemPerRow, (index) => null));
-    
+
     for (int i = 0; i < BoardConsts.itemPerRow; i++) {
       for (int j = 0; j < BoardConsts.itemPerRow; j++) {
         tempData[i][j] = getAtXy(i, j);
@@ -97,8 +97,12 @@ class Board {
     final Piece? piece = getAtCoord(coordinate);
     if (piece != null) {
       data[coordinate.x][coordinate.y] = null;
-      data[targetCoordinate.x][targetCoordinate.y] = piece;
+      updateCoordWithPiece(targetCoordinate, piece);
     }
+  }
+
+  void updateCoordWithPiece(Coordinate coordinate, Piece newPiece) {
+    data[coordinate.x][coordinate.y] = newPiece;
   }
 
   void visualizeBoard() {

@@ -1,8 +1,12 @@
 import 'package:chess_engine/game/utils.dart';
 import 'package:flutter/material.dart';
 
+typedef PieceIdentifier = String;
+
 abstract class Piece {
   final Side side;
+
+  final PieceIdentifier identifier;
 
   // Possible move directions of a piece
   List<Coordinate> get moveCoords;
@@ -27,7 +31,7 @@ abstract class Piece {
 
   int get baseValue;
 
-  Piece({required this.side});
+  Piece({required this.side, required this.identifier});
 
   @override
   String toString() {
@@ -40,7 +44,7 @@ abstract class Piece {
 }
 
 class Rook extends Piece {
-  Rook({required super.side});
+  Rook({required super.side, required super.identifier});
 
   @override
   int get baseValue => 5;
@@ -58,7 +62,7 @@ class Rook extends Piece {
 }
 
 class Knight extends Piece {
-  Knight({required super.side});
+  Knight({required super.side, required super.identifier});
 
   @override
   int get baseValue => 2;
@@ -80,7 +84,7 @@ class Knight extends Piece {
 }
 
 class Bishop extends Piece {
-  Bishop({required super.side});
+  Bishop({required super.side, required super.identifier});
 
   @override
   int get baseValue => 3;
@@ -98,7 +102,7 @@ class Bishop extends Piece {
 }
 
 class King extends Piece {
-  King({required super.side});
+  King({required super.side, required super.identifier});
 
   @override
   int get baseValue => 999;
@@ -122,7 +126,7 @@ class King extends Piece {
 }
 
 class Queen extends Piece {
-  Queen({required super.side});
+  Queen({required super.side, required super.identifier});
 
   @override
   int get baseValue => 9;
@@ -146,7 +150,7 @@ class Queen extends Piece {
 }
 
 class Pawn extends Piece {
-  Pawn({required super.side});
+  Pawn({required super.side, required super.identifier});
 
   @override
   int get baseValue => 1;

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:chess_engine/engine/evaluator.dart';
 import 'package:chess_engine/game/board.dart';
 import 'package:chess_engine/game/move_generator.dart';

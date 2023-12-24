@@ -1,5 +1,4 @@
 import 'package:chess_engine/game/board.dart';
-import 'package:chess_engine/game/move_generator.dart';
 
 class Evaluator {
   /// Positive => favors white
