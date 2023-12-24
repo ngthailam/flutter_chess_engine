@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:chess_engine/game/board.dart';
 import 'package:chess_engine/game/move_generator.dart';
+import 'package:chess_engine/game/move_generator_cache.dart';
 import 'package:chess_engine/game/piece.dart';
 import 'package:chess_engine/game/utils.dart';
 import 'package:chess_engine/utils/logger.dart';
@@ -29,7 +30,7 @@ class Game {
       coordinate,
       currentSide,
       checkKingSafety: checkKingSafety,
-      isFirstMove: moveMap[board.getAtCoord(coordinate)?.identifier] == null,
+      // isFirstMove: moveMap[board.getAtCoord(coordinate)?.identifier] == null,
     );
   }
 
@@ -104,6 +105,7 @@ class Game {
       winnerStreamCtrl.sink.add(winner);
     }
 
+    MoveGeneratorCache().onPieceMoved();
     changeTurn();
     return true;
   }

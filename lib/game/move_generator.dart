@@ -1,9 +1,12 @@
 import 'package:chess_engine/game/board.dart';
+import 'package:chess_engine/game/move_generator_cache.dart';
 import 'package:chess_engine/game/piece.dart';
 import 'package:chess_engine/game/utils.dart';
 import 'package:chess_engine/utils/logger.dart';
 
 class MoveGenerator {
+  final cache = MoveGeneratorCache();
+
   List<Coordinate> _getValidRayMoves(
     Board board,
     Piece piece,
@@ -31,19 +34,47 @@ class MoveGenerator {
     return moves;
   }
 
+  // 0:00:00.001444 - total time 700 - totalTimeSeconds: 0.7
+  // 0:00:00.004108 - total time 439 - totalTimeSeconds: 0.439
+  // int totalTime = 0;
+  // int cacheHitCount = 0;
+  // int cacheMissCount = 0;
+
   Set<Coordinate> getValidMoveCoords(
     Board board,
     Coordinate pieceCoordinate,
     Side currentSide, {
     bool checkKingSafety = true,
-    bool isFirstMove = false,
   }) {
+    // final watch = Stopwatch()..start();
     final piece = board.getAtCoord(pieceCoordinate);
     if (piece == null) return {};
 
+    /// Start - Check for cache
+    final cacheValidMoves = cache.get(
+      boardIdentifier: board.identifier(),
+      pieceIdentifier: piece.identifier,
+    );
+
+    if (cacheValidMoves != null) {
+      // cacheHitCount += 1;
+      // print(
+      //     'zzll cachehit ${board.identifier()} - ${piece.identifier}, totalCacheHit= $cacheHitCount');
+      // totalTime += watch.elapsedMilliseconds;
+      // print(
+      //     'zzll elapsed = ${watch.elapsed} - total time ${totalTime} - totalTimeSeconds: ${totalTime / 1000}');
+      // watch.stop();
+      return cacheValidMoves;
+    }
+
+    /// End - Check for cache
+
     final Set<Coordinate> moves = {};
 
-    for (var moveCoord in (isFirstMove ? piece.firstMoveCoords : piece.moveCoords)) {
+    final isFirstMove =
+        '${pieceCoordinate.x}-${pieceCoordinate.y}' == piece.identifier;
+    for (var moveCoord
+        in (isFirstMove ? piece.firstMoveCoords : piece.moveCoords)) {
       if (piece.isMoveRay) {
         moves.addAll(
             _getValidRayMoves(board, piece, pieceCoordinate, moveCoord));
@@ -118,6 +149,17 @@ class MoveGenerator {
       moves.removeAll(coordsToRemoved);
     }
 
+    cache.save(
+      boardIdentifier: board.identifier(),
+      pieceIdentifier: piece.identifier,
+      moves: moves,
+    );
+
+    // cacheMissCount += 1;
+    // totalTime += watch.elapsedMilliseconds;
+    // print(
+    //     'zzll cacheMiss count=$cacheMissCount, elapsed = ${watch.elapsed} - total time ${totalTime} - totalTimeSeconds: ${totalTime / 1000}');
+    // watch.stop();
     return moves;
   }
 

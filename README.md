@@ -17,10 +17,8 @@ samples, guidance on mobile development, and a full API reference.
 
 
 ## TODO:
-- Add pawn promotion
 - Add enpassant
 
 - Optimize where can
-    + Cache generating move list ?
     + Cache board state for minimax ?
 - Test for multiple check scenario

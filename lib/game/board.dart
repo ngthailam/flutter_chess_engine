@@ -2,6 +2,8 @@ import 'package:chess_engine/game/piece.dart';
 import 'package:chess_engine/game/utils.dart';
 import 'package:chess_engine/utils/logger.dart';
 
+typedef BoardIdentifier = String;
+
 class BoardConsts {
   static const int itemPerRow = 8;
   static const int maxIndex = itemPerRow - 1;
@@ -9,6 +11,17 @@ class BoardConsts {
 
 class Board {
   List<List<Piece?>> data = List.from(initialBoard);
+
+  BoardIdentifier identifier() {
+    String result = '';
+    for (int i = 0; i < BoardConsts.itemPerRow; i++) {
+      for (int j = 0; j < BoardConsts.itemPerRow; j++) {
+        result += data[i][j]?.identifier ?? 'null';
+      }
+    }
+
+    return result;
+  }
 
   Board cloneWithNewCoords(
     Coordinate? initialCoord,
