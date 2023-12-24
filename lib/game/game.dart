@@ -18,6 +18,9 @@ class Game {
 
   Side? winner;
 
+  // This is very temporary, we need IDs for individual pieces
+  final Map<PieceIdentifier, bool> moveMap = {};
+
   StreamController<Side?> winnerStreamCtrl = StreamController();
   StreamController<Side?> turnStreamCtrl = StreamController();
 
@@ -30,12 +33,8 @@ class Game {
       coordinate,
       currentSide,
       checkKingSafety: checkKingSafety,
-      // isFirstMove: moveMap[board.getAtCoord(coordinate)?.identifier] == null,
     );
   }
-
-  // This is very temporary, we need IDs for individual pieces
-  final Map<PieceIdentifier, bool> moveMap = {};
 
   bool move(
     Coordinate pieceCoord,
@@ -73,7 +72,7 @@ class Game {
       }
     }
 
-    // Handle promotion here
+    // Handle promotion
     // Check if reached the final place, then do shits here
     if (piece is Pawn) {
       // TODO: for now, automatically promote to queen
@@ -92,9 +91,9 @@ class Game {
       }
     }
 
+    //
     board.moveToCoord(pieceCoord, targetCoord);
     moveMap[piece.identifier] = true;
-    turnCount += 1;
 
     /// After a move, check if see is checkmate
     if (_needToCheckForCheckmate() && isCheckMate(pieceCoord, targetCoord)) {
@@ -106,16 +105,19 @@ class Game {
     }
 
     MoveGeneratorCache().onPieceMoved();
+    turnCount += 1;
     changeTurn();
+
     return true;
   }
 
   // To reduce checkmate checks when unnesccary
   // Moto: Remove move generations whenever possible
   bool _needToCheckForCheckmate() {
-    return true;
+    return turnCount > 2;
   }
 
+  // TODO: is there a better way to find checkmate ?
   bool isCheckMate(
     Coordinate initialCoord,
     Coordinate moveCoord,
@@ -125,13 +127,11 @@ class Game {
     final Set<Coordinate> allMoves = {};
     final Side sideToGeneratePossibleMove = currentSide.getOtherSide();
 
-    // TODO: Do a very stupid + crud check
-    // TODO: check for double checks
     // Eg. After WHITE move, calls isCheckMate
     // Get all BLACK pieces, then try to generate their possible moves (while checking for Black king safety)
     // If they have 0 moves left => WHITE checkmates BLACK
     final coordinateList =
-        tempBoard.getAllCoordsBySide(sideToGeneratePossibleMove);
+        tempBoard.getAllPiecesCoordsBySide(sideToGeneratePossibleMove);
 
     for (var coordinate in coordinateList) {
       final moves = moveGenerator.getValidMoveCoords(

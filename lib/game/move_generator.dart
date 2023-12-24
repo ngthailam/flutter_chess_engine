@@ -86,13 +86,13 @@ class MoveGenerator {
 
         if (board.isCoordEmpty(newCoord) ||
             (board.isCoordOppositeSide(piece, newCoord) &&
-                piece.alternateCaptureCoords.isEmpty)) {
+                piece.captureCoords.isEmpty)) {
           moves.add(newCoord);
         }
       }
     }
 
-    for (var addCaptureCoord in piece.alternateCaptureCoords) {
+    for (var addCaptureCoord in piece.captureCoords) {
       final newCoord = pieceCoordinate.add(addCaptureCoord);
       if (board.isCoordInsideBoard(newCoord) &&
           board.isCoordOppositeSide(piece, newCoord)) {
@@ -100,10 +100,13 @@ class MoveGenerator {
       }
     }
 
-    if (moves.isNotEmpty && checkKingSafety) {
+    // Try to optimize, since this check safety operation is very costly
+    // so try to minimize the number of times this needs to be called.
+    final needToCheckKingSafety = true;
+    if (moves.isNotEmpty && checkKingSafety && needToCheckKingSafety) {
       Logger.d('getValidMoveCoords, piece=$piece, moves=$moves');
 
-      final kingCoords = board.findKingCoords(currentSide);
+      final kingCoords = board.getKingCoords(currentSide);
       if (kingCoords == null) {
         // Something went wrong here
         Logger.e('Cannot find king coords for side=$currentSide');
@@ -125,7 +128,7 @@ class MoveGenerator {
         final targetMoveCoord = moves.elementAt(m);
 
         final otherSideAttackingCoords =
-            getAllAttackingMovesBySideProposedBoard(
+            getAllAttackingMovesBySideInBoard(
           board,
           otherSide,
           piece,
@@ -163,7 +166,7 @@ class MoveGenerator {
     return moves;
   }
 
-  Set<Coordinate> getAllAttackingMovesBySideProposedBoard(
+  Set<Coordinate> getAllAttackingMovesBySideInBoard(
     Board board,
     Side side,
     Piece? movedPiece,
@@ -174,15 +177,12 @@ class MoveGenerator {
         'getAllAttackingMovesBySideProposedBoard piece=$movedPiece, target=$movedPieceNewCoord ======>>>>>>>>');
     final Set<Coordinate> allMoves = {};
 
-    // TODO: might need to refactor this
-    // move generateMoveCoords out of game
-    Board tempBoard =
-        board.cloneWithNewCoords(movedPieceCurrentCoord, movedPieceNewCoord);
+    Board tempBoard = board.cloneWithNewCoords(
+      movedPieceCurrentCoord,
+      movedPieceNewCoord,
+    );
 
-    tempBoard.visualizeBoard();
-
-    final coordinateList = tempBoard.getAllCoordsBySide(side);
-
+    final coordinateList = tempBoard.getAllPiecesCoordsBySide(side);
     for (var coordinate in coordinateList) {
       final moves = getValidMoveCoords(
         tempBoard,
@@ -198,20 +198,25 @@ class MoveGenerator {
   }
 
   List<BoardAndMoveSet> getAllPossibleBoardPositionBySide(
-      Board board, Side side) {
+    Board board,
+    Side side,
+  ) {
     final List<BoardAndMoveSet> possibleBoards = [];
 
-    board.getAllCoordsBySide(side).forEach((pieceCoord) {
-      final allPiecePossibleMoveCoordList =
-          getValidMoveCoords(board, pieceCoord, side, checkKingSafety: true);
+    board.getAllPiecesCoordsBySide(side).forEach((pieceCoord) {
+      final allPiecePossibleMoveCoordList = getValidMoveCoords(
+        board,
+        pieceCoord,
+        side,
+        checkKingSafety: true,
+      );
       for (var possibleMoveCoord in allPiecePossibleMoveCoordList) {
-        possibleBoards.add(
-          BoardAndMoveSet(
-            board: board.cloneWithNewCoords(pieceCoord, possibleMoveCoord),
-            pieceCoord: pieceCoord,
-            targetPieceCoord: possibleMoveCoord,
-          ),
+        final boardAndMoveSet = BoardAndMoveSet(
+          board: board.cloneWithNewCoords(pieceCoord, possibleMoveCoord),
+          pieceCoord: pieceCoord,
+          targetPieceCoord: possibleMoveCoord,
         );
+        possibleBoards.add(boardAndMoveSet);
       }
     });
 

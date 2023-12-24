@@ -51,7 +51,7 @@ class Board {
     return getAtCoord(coordinate)?.isSameSide(piece) == true;
   }
 
-  bool isNotSameSide(Piece piece, Coordinate coordinate) {
+  bool isCoordNotSameSide(Piece piece, Coordinate coordinate) {
     if (getAtCoord(coordinate)?.isSameSide(piece) == true) {
       return false;
     }
@@ -65,8 +65,8 @@ class Board {
     return !targetPieceAtCoord.isSameSide(piece);
   }
 
-  Coordinate? findKingCoords(Side side) {
-    final pieces = getAllCoordsBySide(side);
+  Coordinate? getKingCoords(Side side) {
+    final pieces = getAllPiecesCoordsBySide(side);
     for (var coordinate in pieces) {
       if (getAtCoord(coordinate) is King) {
         return coordinate;
@@ -77,7 +77,7 @@ class Board {
   }
 
   // TODO: this can be cache, then changed on move called successfully
-  List<Coordinate> getAllCoordsBySide(Side side) {
+  List<Coordinate> getAllPiecesCoordsBySide(Side side) {
     final List<Coordinate> coordinates = [];
     for (int i = 0; i < BoardConsts.itemPerRow; i++) {
       for (int j = 0; j < BoardConsts.itemPerRow; j++) {

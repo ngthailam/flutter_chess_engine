@@ -15,7 +15,7 @@ abstract class Piece {
   List<Coordinate> get firstMoveCoords => moveCoords;
 
   // For pieces with capture coords different from move coords
-  List<Coordinate> get alternateCaptureCoords => [];
+  List<Coordinate> get captureCoords => [];
 
   // Determine a Piece moves in a ray (continuous in given moveVectors) or not.
   bool get isMoveRay;
@@ -159,7 +159,7 @@ class Pawn extends Piece {
   bool get isMoveRay => false;
 
   @override
-  List<Coordinate> get alternateCaptureCoords {
+  List<Coordinate> get captureCoords {
     final List<Coordinate> moves = [];
 
     if (isWhite()) {
