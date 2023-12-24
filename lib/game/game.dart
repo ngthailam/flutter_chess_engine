@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:chess_engine/game/board.dart';
+import 'package:chess_engine/game/constants.dart';
 import 'package:chess_engine/game/move_generator.dart';
 import 'package:chess_engine/game/move_generator_cache.dart';
 import 'package:chess_engine/game/piece.dart';
@@ -76,7 +77,7 @@ class Game {
     // Check if reached the final place, then do shits here
     if (piece is Pawn) {
       // TODO: for now, automatically promote to queen
-      if (piece.isWhite() && targetCoord.y == BoardConsts.maxIndex) {
+      if (piece.isWhite() && targetCoord.y == Constants.maxIndex) {
         piece = Queen(
           side: Side.white,
           identifier: DateTime.now().millisecondsSinceEpoch.toString(),

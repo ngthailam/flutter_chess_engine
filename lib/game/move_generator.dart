@@ -1,4 +1,5 @@
 import 'package:chess_engine/game/board.dart';
+import 'package:chess_engine/game/constants.dart';
 import 'package:chess_engine/game/move_generator_cache.dart';
 import 'package:chess_engine/game/piece.dart';
 import 'package:chess_engine/game/utils.dart';
@@ -14,7 +15,7 @@ class MoveGenerator {
     Coordinate moveCoord,
   ) {
     List<Coordinate> moves = [];
-    for (int k = 1; k < BoardConsts.itemPerRow; k++) {
+    for (int k = 1; k < Constants.itemPerRow; k++) {
       final newCoord = coordinate.add(moveCoord, multiplier: k);
       if (board.isCoordInsideBoard(newCoord)) {
         final targetPiece = board.getAtCoord(newCoord);

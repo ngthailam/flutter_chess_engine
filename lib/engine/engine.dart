@@ -1,4 +1,5 @@
 import 'package:chess_engine/engine/minimax.dart';
+import 'package:chess_engine/game/constants.dart';
 import 'package:chess_engine/game/game.dart';
 import 'package:chess_engine/game/move_generator.dart';
 import 'package:chess_engine/game/utils.dart';
@@ -16,8 +17,13 @@ class Engine {
       ),
       evaluation: 0,
     );
-    final MiniMaxOutput output = MiniMax()
-        .run(game.board, 3, initialOutput, initialOutput, side.isWhite());
+    final MiniMaxOutput output = MiniMax().run(
+      game.board,
+      Constants.searchDepth,
+      initialOutput,
+      initialOutput,
+      side.isWhite(),
+    );
 
     Logger.d(
         'Engine >>>>>>>> decided: move piece ${game.board.getAtCoord(output.boardAndMoveSet.pieceCoord)} ${output.boardAndMoveSet.pieceCoord} to ${output.boardAndMoveSet.targetPieceCoord}');

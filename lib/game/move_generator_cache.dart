@@ -1,5 +1,4 @@
-import 'package:chess_engine/game/board.dart';
-import 'package:chess_engine/game/piece.dart';
+import 'package:chess_engine/game/constants.dart';
 import 'package:chess_engine/game/utils.dart';
 
 // Each board possition should contain 1 Map<PieceIndentifier, Set<Coordinate>>
@@ -21,8 +20,6 @@ class MoveGeneratorCache {
   final Map<BoardIdentifier, int> cacheHitCount = {};
 
   int moveCount = 0;
-
-  int maxMoveCountPerCache = 3;
 
   Set<Coordinate>? get({
     required BoardIdentifier boardIdentifier,
@@ -50,7 +47,7 @@ class MoveGeneratorCache {
   void onPieceMoved() {
     moveCount += 1;
     cacheHitCount.removeWhere((key, value) {
-      return moveCount - value > maxMoveCountPerCache;
+      return moveCount - value > Constants.searchDepth;
     });
   }
 

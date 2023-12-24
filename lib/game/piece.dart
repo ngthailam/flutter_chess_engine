@@ -1,7 +1,6 @@
+import 'package:chess_engine/game/constants.dart';
 import 'package:chess_engine/game/utils.dart';
 import 'package:flutter/material.dart';
-
-typedef PieceIdentifier = String;
 
 abstract class Piece {
   final Side side;

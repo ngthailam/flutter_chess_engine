@@ -1,21 +1,15 @@
+import 'package:chess_engine/game/constants.dart';
 import 'package:chess_engine/game/piece.dart';
 import 'package:chess_engine/game/utils.dart';
 import 'package:chess_engine/utils/logger.dart';
-
-typedef BoardIdentifier = String;
-
-class BoardConsts {
-  static const int itemPerRow = 8;
-  static const int maxIndex = itemPerRow - 1;
-}
 
 class Board {
   List<List<Piece?>> data = List.from(initialBoard, growable: false);
 
   BoardIdentifier identifier() {
     String result = '';
-    for (int i = 0; i < BoardConsts.itemPerRow; i++) {
-      for (int j = 0; j < BoardConsts.itemPerRow; j++) {
+    for (int i = 0; i < Constants.itemPerRow; i++) {
+      for (int j = 0; j < Constants.itemPerRow; j++) {
         result += data[i][j]?.identifier ?? 'null';
       }
     }
@@ -27,11 +21,11 @@ class Board {
     Coordinate? initialCoord,
     Coordinate? moveCoord,
   ) {
-    List<List<Piece?>> tempData = List.generate(BoardConsts.itemPerRow,
-        (index) => List.generate(BoardConsts.itemPerRow, (index) => null));
+    List<List<Piece?>> tempData = List.generate(Constants.itemPerRow,
+        (index) => List.generate(Constants.itemPerRow, (index) => null));
 
-    for (int i = 0; i < BoardConsts.itemPerRow; i++) {
-      for (int j = 0; j < BoardConsts.itemPerRow; j++) {
+    for (int i = 0; i < Constants.itemPerRow; i++) {
+      for (int j = 0; j < Constants.itemPerRow; j++) {
         tempData[i][j] = getAtXy(i, j);
       }
     }
@@ -79,8 +73,8 @@ class Board {
   // TODO: this can be cache, then changed on move called successfully
   List<Coordinate> getAllPiecesCoordsBySide(Side side) {
     final List<Coordinate> coordinates = [];
-    for (int i = 0; i < BoardConsts.itemPerRow; i++) {
-      for (int j = 0; j < BoardConsts.itemPerRow; j++) {
+    for (int i = 0; i < Constants.itemPerRow; i++) {
+      for (int j = 0; j < Constants.itemPerRow; j++) {
         final piece = getAtXy(i, j);
         if (piece != null && piece.side == side) {
           coordinates.add(Coordinate(i, j));
@@ -93,9 +87,9 @@ class Board {
 
   bool isCoordInsideBoard(Coordinate coordinate) {
     return 0 <= coordinate.x &&
-        coordinate.x <= BoardConsts.maxIndex &&
+        coordinate.x <= Constants.maxIndex &&
         0 <= coordinate.y &&
-        coordinate.y <= BoardConsts.maxIndex;
+        coordinate.y <= Constants.maxIndex;
   }
 
   Piece? getAtCoord(Coordinate coordinate) {
@@ -120,9 +114,9 @@ class Board {
 
   void visualizeBoard() {
     Logger.d('==============================================================');
-    for (int i = 0; i < BoardConsts.itemPerRow; i++) {
+    for (int i = 0; i < Constants.itemPerRow; i++) {
       String rowStr = '';
-      for (int j = 0; j < BoardConsts.itemPerRow; j++) {
+      for (int j = 0; j < Constants.itemPerRow; j++) {
         rowStr +=
             data[i][j] == null ? ' x x ' : ' ${data[i][j]!.toShortString()} ';
       }
