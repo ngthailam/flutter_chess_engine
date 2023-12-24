@@ -95,11 +95,8 @@ class Game {
     moveMap[piece.identifier] = true;
     turnCount += 1;
 
-    // To reduce checkmate checks when unnesccary
-    final needToCheckForCheckMate = piece is! King;
-
     /// After a move, check if see is checkmate
-    if (needToCheckForCheckMate && isCheckMate(pieceCoord, targetCoord)) {
+    if (_needToCheckForCheckmate() && isCheckMate(pieceCoord, targetCoord)) {
       // Notify
       Logger.d(
           '${currentSide.name.toUpperCase()} is the Winner. Congratulations! \n 🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉');
@@ -108,6 +105,12 @@ class Game {
     }
 
     changeTurn();
+    return true;
+  }
+
+  // To reduce checkmate checks when unnesccary
+  // Moto: Remove move generations whenever possible
+  bool _needToCheckForCheckmate() {
     return true;
   }
 
