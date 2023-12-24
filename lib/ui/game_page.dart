@@ -123,7 +123,7 @@ class _MyHomePageState extends State<GamePage> {
       _onNewFocus(newFocusedCoord);
       setState(() {});
     } else {
-      game.move(focusedCoord!, newFocusedCoord);
+      game.move(focusedCoord!, newFocusedCoord, validMoves: validMoves);
       _resetFocus();
       setState(() {});
       // To avoid double setState

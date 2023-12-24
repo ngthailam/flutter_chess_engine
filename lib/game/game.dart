@@ -36,7 +36,11 @@ class Game {
   // This is very temporary, we need IDs for individual pieces
   final Map<PieceIdentifier, bool> moveMap = {};
 
-  bool move(Coordinate pieceCoord, Coordinate targetCoord) {
+  bool move(
+    Coordinate pieceCoord,
+    Coordinate targetCoord, {
+    Set<Coordinate>? validMoves,
+  }) {
     Piece? piece = board.getAtCoord(pieceCoord);
     Logger.d(
         'Move, pieceCoord=$pieceCoord, piece=$piece, targetCoord=$targetCoord');
@@ -54,19 +58,18 @@ class Game {
       return false;
     }
 
-    // !isCoordEmptyAndNotSameSide(piece, targetCoord)
     if (board.isCoordSameSide(piece, targetCoord)) {
       Logger.e(
           'Invalid move, coord occupied by same side piece, targetCoord=$targetCoord}');
       return false;
     }
 
-    Set<Coordinate> validMoves = getValidMoveCoords(pieceCoord);
-
-    if (!validMoves.contains(targetCoord)) {
-      Logger.e(
-          'Invalid move set, targetCoord=$targetCoord, validMoves=$validMoves}');
-      return false;
+    if (validMoves != null) {
+      if (!validMoves.contains(targetCoord)) {
+        Logger.e(
+            'Invalid move set, targetCoord=$targetCoord, validMoves=$validMoves}');
+        return false;
+      }
     }
 
     // Handle promotion here
@@ -92,8 +95,11 @@ class Game {
     moveMap[piece.identifier] = true;
     turnCount += 1;
 
+    // To reduce checkmate checks when unnesccary
+    final needToCheckForCheckMate = piece is! King;
+
     /// After a move, check if see is checkmate
-    if (isCheckMate(pieceCoord, targetCoord)) {
+    if (needToCheckForCheckMate && isCheckMate(pieceCoord, targetCoord)) {
       // Notify
       Logger.d(
           '${currentSide.name.toUpperCase()} is the Winner. Congratulations! \n 🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉');
