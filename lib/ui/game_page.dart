@@ -100,26 +100,35 @@ class _MyHomePageState extends State<GamePage> {
     if (focusedCoord == null) {
       if (pieceAtNewFocusedCoord?.side == game.currentSide) {
         _onNewFocus(newFocusedCoord);
-      }
-    } else {
-      if (focusedCoord != newFocusedCoord) {
-        final pieceAtNewCoord = game.board.getAtCoord(newFocusedCoord);
-        final pieceAtFocusedCoord = game.board.getAtCoord(focusedCoord!);
-        if (pieceAtNewCoord != null &&
-            pieceAtFocusedCoord?.isSameSide(pieceAtNewCoord) == true) {
-          _onNewFocus(newFocusedCoord);
-        } else {
-          game.move(focusedCoord!, newFocusedCoord);
-          _resetFocus();
-          // To avoid double setState
-          return;
-        }
+        setState(() {});
       } else {
-        _resetFocus();
+        // When click on piece on the other side while not your turn
+        // do nothing here
       }
+
+      return;
     }
 
-    setState(() {});
+    if (focusedCoord == newFocusedCoord) {
+      _resetFocus();
+      setState(() {});
+      return;
+    }
+
+    final pieceAtNewCoord = game.board.getAtCoord(newFocusedCoord);
+    final pieceAtFocusedCoord = game.board.getAtCoord(focusedCoord!);
+
+    if (pieceAtNewCoord != null &&
+        pieceAtFocusedCoord?.isSameSide(pieceAtNewCoord) == true) {
+      _onNewFocus(newFocusedCoord);
+      setState(() {});
+    } else {
+      game.move(focusedCoord!, newFocusedCoord);
+      _resetFocus();
+      setState(() {});
+      // To avoid double setState
+      return;
+    }
   }
 
   Widget _pieceWidget({required int x, required int y}) {
