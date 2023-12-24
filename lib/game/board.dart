@@ -10,7 +10,7 @@ class BoardConsts {
 }
 
 class Board {
-  List<List<Piece?>> data = List.from(initialBoard);
+  List<List<Piece?>> data = List.from(initialBoard, growable: false);
 
   BoardIdentifier identifier() {
     String result = '';
