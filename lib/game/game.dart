@@ -115,26 +115,31 @@ class Game {
     Coordinate initialCoord,
     Coordinate moveCoord,
   ) {
-    final tempBoard = board.cloneWithNewCoords(initialCoord, moveCoord);
+    // Coords is already moved in move() function
+    final tempBoard = board.cloneWithNewCoords(null, null);
     final Set<Coordinate> allMoves = {};
+    final Side sideToGeneratePossibleMove = currentSide.getOtherSide();
 
     // TODO: Do a very stupid + crud check
     // TODO: check for double checks
+    // Eg. After WHITE move, calls isCheckMate
+    // Get all BLACK pieces, then try to generate their possible moves (while checking for Black king safety)
+    // If they have 0 moves left => WHITE checkmates BLACK
     final coordinateList =
-        tempBoard.getAllCoordsBySide(currentSide.getOtherSide());
+        tempBoard.getAllCoordsBySide(sideToGeneratePossibleMove);
 
     for (var coordinate in coordinateList) {
       final moves = moveGenerator.getValidMoveCoords(
         tempBoard,
         coordinate,
-        currentSide,
+        sideToGeneratePossibleMove,
         checkKingSafety: true,
       );
       allMoves.addAll(moves);
     }
 
     Logger.d(
-        'Checking checkmate for ${currentSide.getOtherSide()} : possibleMovesLeft=$allMoves');
+        'Checking checkmate for $sideToGeneratePossibleMove : possibleMovesLeft=$allMoves');
     return allMoves.isEmpty;
   }
 
