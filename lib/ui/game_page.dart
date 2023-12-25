@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:chess_engine/engine/engine.dart';
+import 'package:chess_engine/engine/evaluator.dart';
 import 'package:chess_engine/game/constants.dart';
 import 'package:chess_engine/game/game.dart';
 import 'package:chess_engine/game/piece.dart';
@@ -38,18 +39,18 @@ class _MyHomePageState extends State<GamePage> {
     });
 
     _turnStreamSub = game.turnStreamCtrl.stream.listen((event) {
-      // if (event == engine.side) {
-      //   engine.move(game);
-      // } else if (event == engineWhite.side) {
-      //   engineWhite.move(game);
-      // }
+      if (event == engine.side) {
+        engine.move(game);
+      } else if (event == engineWhite.side) {
+        engineWhite.move(game);
+      }
 
-      // if (mounted) {
-      //   setState(() {});
-      // }
+      if (mounted) {
+        setState(() {});
+      }
     });
 
-    // engineWhite.move(game);
+    engineWhite.move(game);
   }
 
   @override
@@ -179,6 +180,7 @@ class _MyHomePageState extends State<GamePage> {
             if (game.currentSide == engine.side)
               const Text('Computer is thinking....'),
             Text('Turn count: ${game.turnCount}'),
+            _evaluation(),
             _resultText(),
             const SizedBox(height: 32),
             GestureDetector(
@@ -194,9 +196,14 @@ class _MyHomePageState extends State<GamePage> {
     );
   }
 
+  Widget _evaluation() {
+    return Text('Evaluation:${Evaluator.evaluate(game.board)}');
+  }
+
   Widget _resultText() {
     if (game.result == null) return const SizedBox.shrink();
-    if (game.result == GameResult.draw) return const Text('Draw match. Good effort');
+    if (game.result == GameResult.draw)
+      return const Text('Draw match. Good effort');
     return Text('🎉🎉🎉 Winner: ${game.result!.name.toUpperCase()} 🎉🎉🎉');
   }
 
