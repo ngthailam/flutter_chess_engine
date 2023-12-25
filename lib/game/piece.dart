@@ -54,10 +54,10 @@ class Rook extends Piece {
 
   @override
   List<Coordinate> get moveCoords => [
-        Coordinate(-1, 0), // Left
-        Coordinate(1, 0), // Right
-        Coordinate(0, 1), // Down
-        Coordinate(0, -1), // Up
+        const Coordinate(-1, 0), // Left
+        const Coordinate(1, 0), // Right
+        const Coordinate(0, 1), // Down
+        const Coordinate(0, -1), // Up
       ];
 }
 
@@ -72,14 +72,14 @@ class Knight extends Piece {
 
   @override
   List<Coordinate> get moveCoords => [
-        Coordinate(1, 2), // Top right
-        Coordinate(2, 1), // Right top
-        Coordinate(2, -1), // Right bot
-        Coordinate(1, -2), // Bot right
-        Coordinate(-1, -2), // Bot left
-        Coordinate(-2, -1), // Left bot
-        Coordinate(-2, 1), // Left top
-        Coordinate(-1, 2), // Top left
+        const Coordinate(1, 2), // Top right
+        const Coordinate(2, 1), // Right top
+        const Coordinate(2, -1), // Right bot
+        const Coordinate(1, -2), // Bot right
+        const Coordinate(-1, -2), // Bot left
+        const Coordinate(-2, -1), // Left bot
+        const Coordinate(-2, 1), // Left top
+        const Coordinate(-1, 2), // Top left
       ];
 }
 
@@ -94,10 +94,10 @@ class Bishop extends Piece {
 
   @override
   List<Coordinate> get moveCoords => [
-        Coordinate(1, 1), // Top right
-        Coordinate(1, -1), // Bot right
-        Coordinate(-1, -1), // Bot left
-        Coordinate(-1, 1), // Top left
+        const Coordinate(1, 1), // Top right
+        const Coordinate(1, -1), // Bot right
+        const Coordinate(-1, -1), // Bot left
+        const Coordinate(-1, 1), // Top left
       ];
 }
 
@@ -113,15 +113,15 @@ class King extends Piece {
   @override
   List<Coordinate> get moveCoords => [
         // Verticals/Horizontals
-        Coordinate(-1, 0), // Left
-        Coordinate(1, 0), // Right
-        Coordinate(0, 1), // Down
-        Coordinate(0, -1), // U
+        const Coordinate(-1, 0), // Left
+        const Coordinate(1, 0), // Right
+        const Coordinate(0, 1), // Down
+        const Coordinate(0, -1), // U
         // Diagonals
-        Coordinate(1, 1), // Top right
-        Coordinate(1, -1), // Bot right
-        Coordinate(-1, -1), // Bot left
-        Coordinate(-1, 1), // Top left
+        const Coordinate(1, 1), // Top right
+        const Coordinate(1, -1), // Bot right
+        const Coordinate(-1, -1), // Bot left
+        const Coordinate(-1, 1), // Top left
       ];
 }
 
@@ -137,15 +137,15 @@ class Queen extends Piece {
   @override
   List<Coordinate> get moveCoords => [
         // Verticals/Horizontals
-        Coordinate(-1, 0), // Left
-        Coordinate(1, 0), // Right
-        Coordinate(0, 1), // Down
-        Coordinate(0, -1), // U
+        const Coordinate(-1, 0), // Left
+        const Coordinate(1, 0), // Right
+        const Coordinate(0, 1), // Down
+        const Coordinate(0, -1), // U
         // Diagonals
-        Coordinate(1, 1), // Top right
-        Coordinate(1, -1), // Bot right
-        Coordinate(-1, -1), // Bot left
-        Coordinate(-1, 1), // Top left
+        const Coordinate(1, 1), // Top right
+        const Coordinate(1, -1), // Bot right
+        const Coordinate(-1, -1), // Bot left
+        const Coordinate(-1, 1), // Top left
       ];
 }
 
@@ -166,11 +166,11 @@ class Pawn extends Piece {
     final List<Coordinate> moves = [];
 
     if (isWhite) {
-      moves.add(Coordinate(1, 1));
-      moves.add(Coordinate(-1, 1));
+      moves.add(const Coordinate(1, 1));
+      moves.add(const Coordinate(-1, 1));
     } else {
-      moves.add(Coordinate(1, -1));
-      moves.add(Coordinate(-1, -1));
+      moves.add(const Coordinate(1, -1));
+      moves.add(const Coordinate(-1, -1));
     }
 
     return moves;
@@ -182,10 +182,10 @@ class Pawn extends Piece {
 
     if (isWhite) {
       // 1 up
-      moves.add(Coordinate(0, 1));
+      moves.add(const Coordinate(0, 1));
     } else {
       // 1 down
-      moves.add(Coordinate(0, -1));
+      moves.add(const Coordinate(0, -1));
     }
 
     return moves;

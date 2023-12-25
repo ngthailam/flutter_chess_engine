@@ -4,7 +4,7 @@ class SharedData {
   static final Map<PieceIdentifier, bool> moveMap = {};
 
   static bool isFirstMove(PieceIdentifier pieceIdentifier) {
-    return moveMap[pieceIdentifier] == true;
+    return moveMap[pieceIdentifier] != true;
   }
 
   static void setMoved(PieceIdentifier pieceIdentifier) {

@@ -46,8 +46,8 @@ class MiniMax {
         evaluation: Evaluator.evaluate(board),
         boardAndMoveSet: BoardAndMoveSet(
           board: board,
-          pieceCoord: Coordinate(0, 0),
-          targetPieceCoord: Coordinate(0, 0),
+          pieceCoord: const Coordinate(0, 0),
+          targetPieceCoord: const Coordinate(0, 0),
         ),
       );
     }
@@ -56,16 +56,16 @@ class MiniMax {
       MiniMaxOutput maxOutput = MiniMaxOutput(
         boardAndMoveSet: BoardAndMoveSet(
           board: board,
-          pieceCoord: Coordinate(0, 0),
-          targetPieceCoord: Coordinate(0, 0),
+          pieceCoord: const Coordinate(0, 0),
+          targetPieceCoord: const Coordinate(0, 0),
         ),
         evaluation: -9999,
       );
       MiniMaxOutput output = MiniMaxOutput(
         boardAndMoveSet: BoardAndMoveSet(
           board: board,
-          pieceCoord: Coordinate(0, 0),
-          targetPieceCoord: Coordinate(0, 0),
+          pieceCoord: const Coordinate(0, 0),
+          targetPieceCoord: const Coordinate(0, 0),
         ),
         evaluation: 0,
       );
@@ -101,16 +101,16 @@ class MiniMax {
       MiniMaxOutput minOutput = MiniMaxOutput(
         boardAndMoveSet: BoardAndMoveSet(
           board: board,
-          pieceCoord: Coordinate(0, 0),
-          targetPieceCoord: Coordinate(0, 0),
+          pieceCoord: const Coordinate(0, 0),
+          targetPieceCoord: const Coordinate(0, 0),
         ),
         evaluation: 9999,
       );
       MiniMaxOutput output = MiniMaxOutput(
         boardAndMoveSet: BoardAndMoveSet(
           board: board,
-          pieceCoord: Coordinate(0, 0),
-          targetPieceCoord: Coordinate(0, 0),
+          pieceCoord: const Coordinate(0, 0),
+          targetPieceCoord: const Coordinate(0, 0),
         ),
         evaluation: 0,
       );

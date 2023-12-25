@@ -19,8 +19,6 @@ samples, guidance on mobile development, and a full API reference.
 ## TODO:
 - Add enpassant
 - Add move repetition
-- Add draws
-- Add catsle
 - Optimize where can
     + Cache board state for minimax ?
 - Test for multiple check scenario
@@ -35,3 +33,7 @@ https://en.wikipedia.org/wiki/Transposition_table
 https://www.chessprogramming.org/Late_Move_Reductions
 https://www.chessprogramming.org/Principal_Variation_Search
 - Research NegaScout(Principal Variation Search) as an alternative for Minimax search
+
+
+
+/// TODO: Fully refactor ?????????

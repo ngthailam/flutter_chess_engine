@@ -1,4 +1,5 @@
 import 'package:chess_engine/game/board.dart';
+import 'package:chess_engine/game/constants.dart';
 import 'package:chess_engine/game/move_generator_cache.dart';
 import 'package:chess_engine/game/piece.dart';
 import 'package:chess_engine/game/shared_data.dart';
@@ -41,7 +42,6 @@ class MoveGenerator {
   // int totalTime = 0;
   // int cacheHitCount = 0;
   // int cacheMissCount = 0;
-
   Set<Coordinate> getValidMoveCoords(
     Board board,
     Coordinate pieceCoordinate,
@@ -96,6 +96,43 @@ class MoveGenerator {
             (board.isCoordOppositeSide(piece, newCoord) &&
                 piece.captureCoords.isEmpty)) {
           moves.add(newCoord);
+        }
+      }
+    }
+
+    // Add catsle-ing , very hard cody, try refactoring if possible
+    if (piece is King && SharedData.isFirstMove(piece.identifier)) {
+      if (piece.isWhite) {
+        final rightRook = board.getAtXy(7, 0);
+        if (board.getAtXy(6, 0) == null &&
+            board.getAtXy(5, 0) == null &&
+            rightRook is Rook &&
+            SharedData.isFirstMove(rightRook.identifier)) {
+          moves.add(Constants.whiteRightCastle);
+        }
+
+        final leftRook = board.getAtXy(0, 0);
+        if (board.getAtXy(1, 0) == null &&
+            board.getAtXy(2, 0) == null &&
+            leftRook is Rook &&
+            SharedData.isFirstMove(leftRook.identifier)) {
+          moves.add(Constants.whiteLeftCastle);
+        }
+      } else {
+        final rightRook = board.getAtXy(7, 7);
+        if (board.getAtXy(6, 7) == null &&
+            board.getAtXy(5, 7) == null &&
+            rightRook is Rook &&
+            SharedData.isFirstMove(rightRook.identifier)) {
+          moves.add(Constants.blackRightCastle);
+        }
+
+        final leftRook = board.getAtXy(0, 7);
+        if (board.getAtXy(1, 7) == null &&
+            board.getAtXy(2, 7) == null &&
+            leftRook is Rook &&
+            SharedData.isFirstMove(leftRook.identifier)) {
+          moves.add(Constants.blackLeftCastle);
         }
       }
     }

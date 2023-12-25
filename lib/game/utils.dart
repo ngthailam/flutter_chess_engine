@@ -1,10 +1,20 @@
 import 'package:chess_engine/game/piece.dart';
 
+class LastMove {
+  final List<Coordinate> coord;
+  final List<Coordinate> targetCoord;
+
+  LastMove({
+    this.coord = const [],
+    this.targetCoord = const [],
+  });
+}
+
 class Coordinate {
   final int x;
   final int y;
 
-  Coordinate(this.x, this.y);
+  const Coordinate(this.x, this.y);
 
   Coordinate add(Coordinate coord, {int multiplier = 1}) {
     return Coordinate(

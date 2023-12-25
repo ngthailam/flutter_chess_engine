@@ -20,10 +20,7 @@ class Game {
 
   GameResult? result;
 
-  // This is very temporary, we need IDs for individual pieces
-  final Map<PieceIdentifier, bool> moveMap = {};
-
-  List<Coordinate> _lastMove = [];
+  LastMove _lastMove = LastMove();
 
   StreamController<GameResult?> resultStreamCtrl = StreamController();
   StreamController<Side?> turnStreamCtrl = StreamController();
@@ -47,12 +44,13 @@ class Game {
   }) {
     Piece? piece = board.getAtCoord(pieceCoord);
     Logger.d(
-        'Move, pieceCoord=$pieceCoord, piece=$piece, targetCoord=$targetCoord');
+      'Move, pieceCoord=$pieceCoord, piece=$piece, targetCoord=$targetCoord',
+    );
 
     if (piece == null) {
-      // Show error invalid move here
       Logger.e(
-          'Invalid move, no piece at pieceCoord, pieceCoord=$pieceCoord, targetCoord=$targetCoord');
+        'Invalid move, no piece at pieceCoord, pieceCoord=$pieceCoord, targetCoord=$targetCoord',
+      );
       return false;
     }
 
@@ -76,6 +74,37 @@ class Game {
       }
     }
 
+    if (piece is King &&
+        SharedData.isFirstMove(piece.identifier) &&
+        Constants.castleMoves.contains(targetCoord)) {
+      Coordinate? rookCoord;
+      Coordinate? rookTargetCoord;
+
+      if (piece.isWhite) {
+        // White king
+        if (targetCoord == Constants.whiteRightCastle) {
+          rookCoord = const Coordinate(7, 0);
+          rookTargetCoord = const Coordinate(5, 0);
+        } else if (targetCoord == Constants.whiteLeftCastle) {
+          rookCoord = const Coordinate(0, 0);
+          rookTargetCoord = const Coordinate(3, 0);
+        }
+      } else {
+        // Black king
+        if (targetCoord == Constants.blackRightCastle) {
+          rookCoord = const Coordinate(7, 7);
+          rookTargetCoord = const Coordinate(5, 7);
+        } else if (targetCoord == Constants.blackLeftCastle) {
+          rookCoord = const Coordinate(0, 7);
+          rookTargetCoord = const Coordinate(3, 7);
+        }
+      }
+
+      // Only need to move the rook here
+      SharedData.setMoved(board.getAtCoord(rookCoord!)!.identifier);
+      board.moveToCoord(rookCoord, rookTargetCoord!);
+    }
+
     // Handle promotion
     // Check if reached the final place, then do shits here
     if (piece is Pawn) {
@@ -95,13 +124,11 @@ class Game {
       }
     }
 
-    //
     board.moveToCoord(pieceCoord, targetCoord);
-    moveMap[piece.identifier] = true;
-    _lastMove = [pieceCoord, targetCoord];
+    // _lastMove = [pieceCoord, targetCoord];
 
     /// After a move, check if see is checkmate
-    final gameResult = getGameResult(pieceCoord, targetCoord);
+    final gameResult = getGameResult();
     if (_needToCheckForGameOver() && gameResult != null) {
       result = gameResult;
       resultStreamCtrl.sink.add(result);
@@ -121,20 +148,21 @@ class Game {
     return turnCount > 2;
   }
 
+  // TODO: implement undo function
   void undo() {
     result = null;
     resultStreamCtrl.sink.add(null);
     currentSide = currentSide.getOtherSide();
     turnCount -= 1;
-    _lastMove = [];
-    SharedData.remove(board.getAtCoord(_lastMove[1])!.identifier);
-    move(_lastMove[1], _lastMove[0]);
+    // _lastMove = [];
+
+    /// TODO: add undo move for castling as well
+    // SharedData.remove(board.getAtCoord(_lastMove[1])!.identifier);
+    // move(_lastMove[1], _lastMove[0]);
   }
 
-  GameResult? getGameResult(
-    Coordinate initialCoord,
-    Coordinate moveCoord,
-  ) {
+  // Maybe need to optimize this function ?
+  GameResult? getGameResult() {
     // Coords is already moved in move() function
     final tempBoard = board.cloneWithNewCoords(null, null);
     final Set<Coordinate> oppPossibleMoves = {};
@@ -156,7 +184,8 @@ class Game {
     }
 
     Logger.d(
-        'Checking checkmate for $oppSide : possibleMovesLeft=$oppPossibleMoves');
+      'Checking checkmate for $oppSide : possibleMovesLeft=$oppPossibleMoves',
+    );
 
     if (oppPossibleMoves.isNotEmpty) {
       return null;

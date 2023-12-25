@@ -38,18 +38,18 @@ class _MyHomePageState extends State<GamePage> {
     });
 
     _turnStreamSub = game.turnStreamCtrl.stream.listen((event) {
-      if (event == engine.side) {
-        engine.move(game);
-      } else if (event == engineWhite.side) {
-        engineWhite.move(game);
-      }
+      // if (event == engine.side) {
+      //   engine.move(game);
+      // } else if (event == engineWhite.side) {
+      //   engineWhite.move(game);
+      // }
 
-      if (mounted) {
-        setState(() {});
-      }
+      // if (mounted) {
+      //   setState(() {});
+      // }
     });
 
-    engineWhite.move(game);
+    // engineWhite.move(game);
   }
 
   @override
