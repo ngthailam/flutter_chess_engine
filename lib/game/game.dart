@@ -17,12 +17,12 @@ class Game {
 
   int turnCount = 1;
 
-  Side? winner;
+  GameResult? result;
 
   // This is very temporary, we need IDs for individual pieces
   final Map<PieceIdentifier, bool> moveMap = {};
 
-  StreamController<Side?> winnerStreamCtrl = StreamController();
+  StreamController<GameResult?> resultStreamCtrl = StreamController();
   StreamController<Side?> turnStreamCtrl = StreamController();
 
   Set<Coordinate> getValidMoveCoords(
@@ -98,12 +98,10 @@ class Game {
     _lastMove = [pieceCoord, targetCoord];
 
     /// After a move, check if see is checkmate
-    if (_needToCheckForCheckmate() && isCheckMate(pieceCoord, targetCoord)) {
-      // Notify
-      Logger.d(
-          '${currentSide.name.toUpperCase()} is the Winner. Congratulations! \n 🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉');
-      winner = currentSide;
-      winnerStreamCtrl.sink.add(winner);
+    final gameResult = getGameResult(pieceCoord, targetCoord);
+    if (_needToCheckForGameOver() && gameResult != null) {
+      result = gameResult;
+      resultStreamCtrl.sink.add(result);
     }
 
     MoveGeneratorCache().onPieceMoved();
@@ -115,7 +113,7 @@ class Game {
 
   // To reduce checkmate checks when unnesccary
   // Moto: Remove move generations whenever possible
-  bool _needToCheckForCheckmate() {
+  bool _needToCheckForGameOver() {
     return turnCount > 2;
   }
 
@@ -123,41 +121,67 @@ class Game {
   List<Coordinate> _lastMove = [];
 
   void undo() {
-    winner = null;
+    result = null;
+    resultStreamCtrl.sink.add(null);
     currentSide = currentSide.getOtherSide();
     turnCount -= 1;
     _lastMove = [];
     move(_lastMove[1], _lastMove[0]);
   }
 
-  bool isCheckMate(
+  GameResult? getGameResult(
     Coordinate initialCoord,
     Coordinate moveCoord,
   ) {
     // Coords is already moved in move() function
     final tempBoard = board.cloneWithNewCoords(null, null);
-    final Set<Coordinate> allMoves = {};
-    final Side sideToGeneratePossibleMove = currentSide.getOtherSide();
+    final Set<Coordinate> oppPossibleMoves = {};
+    final Side oppSide = currentSide.getOtherSide();
 
     // Eg. After WHITE move, calls isCheckMate
     // Get all BLACK pieces, then try to generate their possible moves (while checking for Black king safety)
     // If they have 0 moves left => WHITE checkmates BLACK
-    final coordinateList =
-        tempBoard.getAllPiecesCoordsBySide(sideToGeneratePossibleMove);
+    final coordinateList = tempBoard.getAllPiecesCoordsBySide(oppSide);
 
     for (var coordinate in coordinateList) {
       final moves = moveGenerator.getValidMoveCoords(
         tempBoard,
         coordinate,
-        sideToGeneratePossibleMove,
+        oppSide,
         checkKingSafety: true,
       );
-      allMoves.addAll(moves);
+      oppPossibleMoves.addAll(moves);
     }
 
     Logger.d(
-        'Checking checkmate for $sideToGeneratePossibleMove : possibleMovesLeft=$allMoves');
-    return allMoves.isEmpty;
+        'Checking checkmate for $oppSide : possibleMovesLeft=$oppPossibleMoves');
+
+    if (oppPossibleMoves.isNotEmpty) {
+      return null;
+    }
+
+    final oppKingCoords = tempBoard.getKingCoords(oppSide);
+    final allThisSidePieceCoordList =
+        tempBoard.getAllPiecesCoordsBySide(currentSide);
+    for (var coordinate in allThisSidePieceCoordList) {
+      final moves = moveGenerator.getValidMoveCoords(
+        tempBoard,
+        coordinate,
+        oppSide,
+        checkKingSafety: true,
+      );
+
+      // If after their next move, we can capture
+      for (var move in moves) {
+        if (move == oppKingCoords) {
+          return currentSide.isWhite()
+              ? GameResult.whiteWin
+              : GameResult.blackWin;
+        }
+      }
+    }
+
+    return GameResult.draw;
   }
 
   void changeTurn() {

@@ -7,3 +7,9 @@ class Constants {
 typedef BoardIdentifier = String;
 
 typedef PieceIdentifier = String;
+
+enum GameResult {
+  whiteWin,
+  blackWin,
+  draw;
+}

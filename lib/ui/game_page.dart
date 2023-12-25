@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:chess_engine/engine/engine.dart';
+import 'package:chess_engine/game/constants.dart';
 import 'package:chess_engine/game/game.dart';
 import 'package:chess_engine/game/piece.dart';
 import 'package:chess_engine/game/utils.dart';
@@ -24,13 +25,13 @@ class _MyHomePageState extends State<GamePage> {
 
   Set<Coordinate> validMoves = {};
 
-  StreamSubscription? _winnerStreamSub;
+  StreamSubscription? _gameResultStreamSub;
   StreamSubscription? _turnStreamSub;
 
   @override
   void initState() {
     super.initState();
-    _winnerStreamSub = game.winnerStreamCtrl.stream.listen((event) {
+    _gameResultStreamSub = game.resultStreamCtrl.stream.listen((event) {
       if (event != null && mounted) {
         setState(() {});
       }
@@ -53,7 +54,7 @@ class _MyHomePageState extends State<GamePage> {
 
   @override
   void dispose() {
-    _winnerStreamSub?.cancel();
+    _gameResultStreamSub?.cancel();
     _turnStreamSub?.cancel();
     super.dispose();
   }
@@ -92,7 +93,7 @@ class _MyHomePageState extends State<GamePage> {
 
   void _onPieceTapped(Piece? piece, int x, int y) {
     // When click empty square, nothing happens
-    if (game.winner != null) {
+    if (game.result != null) {
       return;
     }
     if (focusedCoord == null && piece == null) {
@@ -178,8 +179,7 @@ class _MyHomePageState extends State<GamePage> {
             if (game.currentSide == engine.side)
               const Text('Computer is thinking....'),
             Text('Turn count: ${game.turnCount}'),
-            if (game.winner != null)
-              Text('🎉🎉🎉 Winner: ${game.winner!.name.toUpperCase()} 🎉🎉🎉'),
+            _resultText(),
             const SizedBox(height: 32),
             GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -192,6 +192,12 @@ class _MyHomePageState extends State<GamePage> {
         ),
       ),
     );
+  }
+
+  Widget _resultText() {
+    if (game.result == null) return const SizedBox.shrink();
+    if (game.result == GameResult.draw) return const Text('Draw match. Good effort');
+    return Text('🎉🎉🎉 Winner: ${game.result!.name.toUpperCase()} 🎉🎉🎉');
   }
 
   Widget _board() {
