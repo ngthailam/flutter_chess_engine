@@ -6,7 +6,9 @@ import 'package:chess_engine/utils/logger.dart';
 import 'package:flutter/foundation.dart';
 
 class Engine {
-  Side side = Side.black;
+  final Side side;
+
+  Engine({this.side = Side.black});
 
   // This shit is blocking the Isolate
   void move(Game game) {

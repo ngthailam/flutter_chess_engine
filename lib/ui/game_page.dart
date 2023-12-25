@@ -18,6 +18,8 @@ class _MyHomePageState extends State<GamePage> {
   final Game game = Game();
   final Engine engine = Engine();
 
+  final Engine engineWhite = Engine(side: Side.white);
+
   Coordinate? focusedCoord;
 
   Set<Coordinate> validMoves = {};
@@ -35,14 +37,18 @@ class _MyHomePageState extends State<GamePage> {
     });
 
     _turnStreamSub = game.turnStreamCtrl.stream.listen((event) {
-      // if (event == engine.side) {
-      //   engine.move(game);
-      // }
+      if (event == engine.side) {
+        engine.move(game);
+      } else if (event == engineWhite.side) {
+        engineWhite.move(game);
+      }
 
-      // if (event != engine.side && mounted) {
-      //   setState(() {});
-      // }
+      if (mounted) {
+        setState(() {});
+      }
     });
+
+    engineWhite.move(game);
   }
 
   @override
