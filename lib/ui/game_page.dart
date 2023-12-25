@@ -30,7 +30,6 @@ class _MyHomePageState extends State<GamePage> {
     super.initState();
     _winnerStreamSub = game.winnerStreamCtrl.stream.listen((event) {
       if (event != null && mounted) {
-        _turnStreamSub?.cancel();
         setState(() {});
       }
     });
@@ -40,7 +39,7 @@ class _MyHomePageState extends State<GamePage> {
         engine.move(game);
       }
 
-      if (mounted) {
+      if (event != engine.side && mounted) {
         setState(() {});
       }
     });
@@ -170,9 +169,19 @@ class _MyHomePageState extends State<GamePage> {
             _board(),
             const SizedBox(height: 16),
             Text('Current turn: ${game.currentSide.name}'),
+            if (game.currentSide == engine.side)
+              const Text('Computer is thinking....'),
             Text('Turn count: ${game.turnCount}'),
             if (game.winner != null)
               Text('🎉🎉🎉 Winner: ${game.winner!.name.toUpperCase()} 🎉🎉🎉'),
+            const SizedBox(height: 32),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                game.undo();
+              },
+              child: const Text('Undo'),
+            )
           ],
         ),
       ),

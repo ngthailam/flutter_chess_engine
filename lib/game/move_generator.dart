@@ -103,7 +103,7 @@ class MoveGenerator {
 
     // Try to optimize, since this check safety operation is very costly
     // so try to minimize the number of times this needs to be called.
-    final needToCheckKingSafety = true;
+    const needToCheckKingSafety = true;
     if (moves.isNotEmpty && checkKingSafety && needToCheckKingSafety) {
       Logger.d('getValidMoveCoords, piece=$piece, moves=$moves');
 
@@ -120,7 +120,6 @@ class MoveGenerator {
       /// - Black King move/not move to an unattacked square
       /// - Black moves a piece, if it defends the King, then OK
       final otherSide = currentSide.getOtherSide();
-      // TODO: moves to be removed, cannot remove 1 item by 1 from a Set while iterating through it
       final List<Coordinate> coordsToRemoved = [];
       for (int m = 0; m < moves.length; m++) {
         Logger.d(
@@ -235,4 +234,15 @@ class BoardAndMoveSet {
     required this.pieceCoord,
     required this.targetPieceCoord,
   });
+
+  BoardAndMoveSet copyWith({
+    Board? board,
+    Coordinate? pieceCoord,
+    Coordinate? targetPieceCoord,
+  }) =>
+      BoardAndMoveSet(
+        board: board ?? this.board,
+        pieceCoord: pieceCoord ?? this.pieceCoord,
+        targetPieceCoord: targetPieceCoord ?? this.targetPieceCoord,
+      );
 }

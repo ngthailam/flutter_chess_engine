@@ -5,9 +5,30 @@ import 'package:chess_engine/game/utils.dart';
 
 class MiniMaxOutput {
   final BoardAndMoveSet boardAndMoveSet;
-  final int evaluation;
+  final double evaluation;
 
   MiniMaxOutput({required this.boardAndMoveSet, required this.evaluation});
+
+  MiniMaxOutput copyWith({
+    BoardAndMoveSet? boardAndMoveSet,
+    double? evaluation,
+  }) =>
+      MiniMaxOutput(
+        boardAndMoveSet: boardAndMoveSet ?? this.boardAndMoveSet,
+        evaluation: evaluation ?? this.evaluation,
+      );
+
+  MiniMaxOutput copyWithCoord({
+    required Coordinate coordinate,
+    required Coordinate targetCoordinate,
+  }) =>
+      MiniMaxOutput(
+        boardAndMoveSet: boardAndMoveSet.copyWith(
+          pieceCoord: coordinate,
+          targetPieceCoord: targetCoordinate,
+        ),
+        evaluation: evaluation,
+      );
 }
 
 class MiniMax {
@@ -16,8 +37,8 @@ class MiniMax {
   MiniMaxOutput run(
     Board board,
     int depth,
-    MiniMaxOutput alpha,
-    MiniMaxOutput beta,
+    MiniMaxOutput? alpha,
+    MiniMaxOutput? beta,
     bool maximizingSide,
   ) {
     if (depth == 0) {
@@ -52,15 +73,27 @@ class MiniMax {
           moveGenerator.getAllPossibleBoardPositionBySide(board, Side.white);
 
       for (var element in possibleBoards) {
-        output = run(element.board, depth - 1, alpha, beta, false);
+        output =
+            run(element.board, depth - 1, alpha, beta, false).copyWithCoord(
+          coordinate: element.pieceCoord,
+          targetCoordinate: element.targetPieceCoord,
+        );
         if (maxOutput.evaluation < output.evaluation) {
           maxOutput = output;
         }
-        MiniMaxOutput? tempAlpha =
-            output.evaluation > alpha.evaluation ? output : alpha;
 
-        if (beta.evaluation <= tempAlpha.evaluation) {
-          break;
+        MiniMaxOutput? tempAlpha;
+
+        if (alpha?.evaluation == null) {
+          tempAlpha = output;
+        } else {
+          tempAlpha = output.evaluation > alpha!.evaluation ? output : alpha;
+        }
+
+        if (beta != null) {
+          if (beta.evaluation <= tempAlpha.evaluation) {
+            break;
+          }
         }
       }
       return maxOutput;
@@ -84,18 +117,30 @@ class MiniMax {
       List<BoardAndMoveSet> possibleBoards =
           moveGenerator.getAllPossibleBoardPositionBySide(board, Side.black);
 
-      for (var element in possibleBoards) {
-        output = run(element.board, depth - 1, alpha, beta, true);
+      for (BoardAndMoveSet element in possibleBoards) {
+        output = run(element.board, depth - 1, alpha, beta, true).copyWithCoord(
+          coordinate: element.pieceCoord,
+          targetCoordinate: element.targetPieceCoord,
+        );
+
         if (minOutput.evaluation > output.evaluation) {
           minOutput = output;
         }
-        if (beta.evaluation > minOutput.evaluation) {
+
+        if (beta == null || beta.evaluation > minOutput.evaluation) {
           beta = minOutput;
         }
-        if (beta.evaluation <= alpha.evaluation) {
-          break;
+
+        MiniMaxOutput? tempBeta =
+            beta.evaluation > minOutput.evaluation ? minOutput : beta;
+
+        if (alpha != null) {
+          if (tempBeta.evaluation <= alpha.evaluation) {
+            break;
+          }
         }
       }
+
       return minOutput;
     }
   }

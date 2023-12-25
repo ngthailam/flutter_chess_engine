@@ -95,6 +95,8 @@ class Game {
     //
     board.moveToCoord(pieceCoord, targetCoord);
     moveMap[piece.identifier] = true;
+    turnCount += 1;
+    _lastMove = [pieceCoord, targetCoord];
 
     /// After a move, check if see is checkmate
     if (_needToCheckForCheckmate() && isCheckMate(pieceCoord, targetCoord)) {
@@ -119,6 +121,16 @@ class Game {
   }
 
   // TODO: is there a better way to find checkmate ?
+  List<Coordinate> _lastMove = [];
+
+  void undo() {
+    winner = null;
+    currentSide = currentSide.getOtherSide();
+    turnCount -= 1;
+    _lastMove = [];
+    move(_lastMove[1], _lastMove[0]);
+  }
+
   bool isCheckMate(
     Coordinate initialCoord,
     Coordinate moveCoord,
