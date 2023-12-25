@@ -35,13 +35,13 @@ class _MyHomePageState extends State<GamePage> {
     });
 
     _turnStreamSub = game.turnStreamCtrl.stream.listen((event) {
-      if (event == engine.side) {
-        engine.move(game);
-      }
+      // if (event == engine.side) {
+      //   engine.move(game);
+      // }
 
-      if (event != engine.side && mounted) {
-        setState(() {});
-      }
+      // if (event != engine.side && mounted) {
+      //   setState(() {});
+      // }
     });
   }
 

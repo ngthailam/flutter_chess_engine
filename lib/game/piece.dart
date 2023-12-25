@@ -10,27 +10,28 @@ abstract class Piece {
   // Possible move directions of a piece
   List<Coordinate> get moveCoords;
 
-// Possible move directions of a piece on first move
-  List<Coordinate> get firstMoveCoords => moveCoords;
-
   // For pieces with capture coords different from move coords
   List<Coordinate> get captureCoords => [];
 
   // Determine a Piece moves in a ray (continuous in given moveVectors) or not.
-  bool get isMoveRay;
+  // and the number of which this move ray gets
+  int moveCoordsMultiplier(bool isFirstMove);
 
   String get imageName {
-    return '${runtimeType.toString().toLowerCase()}_${isWhite() ? 'white' : 'black'}.svg';
+    return '${runtimeType.toString().toLowerCase()}_${isWhite ? 'white' : 'black'}.svg';
   }
 
   // Helper functions
-  bool isWhite() => side.isWhite();
+  bool isWhite;
 
   bool isSameSide(Piece otherPiece) => side == otherPiece.side;
 
   int get baseValue;
 
-  Piece({required this.side, required this.identifier});
+  Piece({
+    required this.side,
+    required this.identifier,
+  }) : isWhite = side.isWhite();
 
   @override
   String toString() {
@@ -49,7 +50,7 @@ class Rook extends Piece {
   int get baseValue => 5;
 
   @override
-  bool get isMoveRay => true;
+  int moveCoordsMultiplier(bool isFirstMove) => Constants.maxIndex;
 
   @override
   List<Coordinate> get moveCoords => [
@@ -67,7 +68,7 @@ class Knight extends Piece {
   int get baseValue => 2;
 
   @override
-  bool get isMoveRay => false;
+  int moveCoordsMultiplier(bool isFirstMove) => 1;
 
   @override
   List<Coordinate> get moveCoords => [
@@ -89,7 +90,7 @@ class Bishop extends Piece {
   int get baseValue => 3;
 
   @override
-  bool get isMoveRay => true;
+  int moveCoordsMultiplier(bool isFirstMove) => Constants.maxIndex;
 
   @override
   List<Coordinate> get moveCoords => [
@@ -107,7 +108,7 @@ class King extends Piece {
   int get baseValue => 999;
 
   @override
-  bool get isMoveRay => false;
+  int moveCoordsMultiplier(bool isFirstMove) => 1;
 
   @override
   List<Coordinate> get moveCoords => [
@@ -131,7 +132,7 @@ class Queen extends Piece {
   int get baseValue => 9;
 
   @override
-  bool get isMoveRay => true;
+  int moveCoordsMultiplier(bool isFirstMove) => Constants.maxIndex;
 
   @override
   List<Coordinate> get moveCoords => [
@@ -155,13 +156,16 @@ class Pawn extends Piece {
   int get baseValue => 1;
 
   @override
-  bool get isMoveRay => false;
+  int moveCoordsMultiplier(bool isFirstMove) {
+    if (isFirstMove) return 2;
+    return 1;
+  }
 
   @override
   List<Coordinate> get captureCoords {
     final List<Coordinate> moves = [];
 
-    if (isWhite()) {
+    if (isWhite) {
       moves.add(Coordinate(1, 1));
       moves.add(Coordinate(-1, 1));
     } else {
@@ -173,25 +177,10 @@ class Pawn extends Piece {
   }
 
   @override
-  List<Coordinate> get firstMoveCoords {
-    final List<Coordinate> moves = moveCoords;
-
-    if (isWhite()) {
-      // 2 up on first move
-      moves.add(Coordinate(0, 2));
-    } else {
-      // 2 down on first move
-      moves.add(Coordinate(0, -2));
-    }
-
-    return moves;
-  }
-
-  @override
   List<Coordinate> get moveCoords {
     final List<Coordinate> moves = [];
 
-    if (isWhite()) {
+    if (isWhite) {
       // 1 up
       moves.add(Coordinate(0, 1));
     } else {

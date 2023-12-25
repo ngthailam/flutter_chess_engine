@@ -77,13 +77,13 @@ class Game {
     // Check if reached the final place, then do shits here
     if (piece is Pawn) {
       // TODO: for now, automatically promote to queen
-      if (piece.isWhite() && targetCoord.y == Constants.maxIndex) {
+      if (piece.isWhite && targetCoord.y == Constants.maxIndex) {
         piece = Queen(
           side: Side.white,
           identifier: DateTime.now().millisecondsSinceEpoch.toString(),
         );
         board.updateCoordWithPiece(pieceCoord, piece);
-      } else if (!piece.isWhite() && targetCoord.y == 0) {
+      } else if (!piece.isWhite && targetCoord.y == 0) {
         piece = Queen(
           side: Side.black,
           identifier: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -95,7 +95,6 @@ class Game {
     //
     board.moveToCoord(pieceCoord, targetCoord);
     moveMap[piece.identifier] = true;
-    turnCount += 1;
     _lastMove = [pieceCoord, targetCoord];
 
     /// After a move, check if see is checkmate

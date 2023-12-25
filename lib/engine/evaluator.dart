@@ -22,7 +22,7 @@ class Evaluator {
         final piece = board.getAtXy(i, j);
         final extraScore = extraCentralPoints[i][j];
         if (piece != null) {
-          if (piece.isWhite()) {
+          if (piece.isWhite) {
             score += piece.baseValue + extraScore;
           } else {
             score -= (piece.baseValue + extraScore);

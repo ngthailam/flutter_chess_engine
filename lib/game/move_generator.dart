@@ -1,5 +1,4 @@
 import 'package:chess_engine/game/board.dart';
-import 'package:chess_engine/game/constants.dart';
 import 'package:chess_engine/game/move_generator_cache.dart';
 import 'package:chess_engine/game/piece.dart';
 import 'package:chess_engine/game/utils.dart';
@@ -13,9 +12,10 @@ class MoveGenerator {
     Piece piece,
     Coordinate coordinate,
     Coordinate moveCoord,
+    int extendIndex,
   ) {
     List<Coordinate> moves = [];
-    for (int k = 1; k < Constants.itemPerRow; k++) {
+    for (int k = 1; k <= extendIndex; k++) {
       final newCoord = coordinate.add(moveCoord, multiplier: k);
       if (board.isCoordInsideBoard(newCoord)) {
         final targetPiece = board.getAtCoord(newCoord);
@@ -72,13 +72,20 @@ class MoveGenerator {
 
     final Set<Coordinate> moves = {};
 
+    // TODO: this is not very good, piece can return to their original places
     final isFirstMove =
         '${pieceCoordinate.x}-${pieceCoordinate.y}' == piece.identifier;
-    for (var moveCoord
-        in (isFirstMove ? piece.firstMoveCoords : piece.moveCoords)) {
-      if (piece.isMoveRay) {
+    for (var moveCoord in piece.moveCoords) {
+      if (piece.moveCoordsMultiplier(isFirstMove) > 1) {
         moves.addAll(
-            _getValidRayMoves(board, piece, pieceCoordinate, moveCoord));
+          _getValidRayMoves(
+            board,
+            piece,
+            pieceCoordinate,
+            moveCoord,
+            piece.moveCoordsMultiplier(isFirstMove),
+          ),
+        );
       } else {
         final newCoord = pieceCoordinate.add(moveCoord);
         if (!board.isCoordInsideBoard(newCoord)) {
@@ -127,8 +134,7 @@ class MoveGenerator {
 
         final targetMoveCoord = moves.elementAt(m);
 
-        final otherSideAttackingCoords =
-            getAllAttackingMovesBySideInBoard(
+        final otherSideAttackingCoords = getAllAttackingMovesBySideInBoard(
           board,
           otherSide,
           piece,
