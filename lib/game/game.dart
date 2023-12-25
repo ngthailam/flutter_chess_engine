@@ -5,6 +5,7 @@ import 'package:chess_engine/game/constants.dart';
 import 'package:chess_engine/game/move_generator.dart';
 import 'package:chess_engine/game/move_generator_cache.dart';
 import 'package:chess_engine/game/piece.dart';
+import 'package:chess_engine/game/shared_data.dart';
 import 'package:chess_engine/game/utils.dart';
 import 'package:chess_engine/utils/logger.dart';
 
@@ -21,6 +22,8 @@ class Game {
 
   // This is very temporary, we need IDs for individual pieces
   final Map<PieceIdentifier, bool> moveMap = {};
+
+  List<Coordinate> _lastMove = [];
 
   StreamController<GameResult?> resultStreamCtrl = StreamController();
   StreamController<Side?> turnStreamCtrl = StreamController();
@@ -106,6 +109,7 @@ class Game {
 
     MoveGeneratorCache().onPieceMoved();
     turnCount += 1;
+    SharedData.setMoved(piece.identifier);
     changeTurn();
 
     return true;
@@ -117,15 +121,13 @@ class Game {
     return turnCount > 2;
   }
 
-  // TODO: is there a better way to find checkmate ?
-  List<Coordinate> _lastMove = [];
-
   void undo() {
     result = null;
     resultStreamCtrl.sink.add(null);
     currentSide = currentSide.getOtherSide();
     turnCount -= 1;
     _lastMove = [];
+    SharedData.remove(board.getAtCoord(_lastMove[1])!.identifier);
     move(_lastMove[1], _lastMove[0]);
   }
 

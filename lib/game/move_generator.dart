@@ -1,6 +1,7 @@
 import 'package:chess_engine/game/board.dart';
 import 'package:chess_engine/game/move_generator_cache.dart';
 import 'package:chess_engine/game/piece.dart';
+import 'package:chess_engine/game/shared_data.dart';
 import 'package:chess_engine/game/utils.dart';
 import 'package:chess_engine/utils/logger.dart';
 
@@ -73,8 +74,7 @@ class MoveGenerator {
     final Set<Coordinate> moves = {};
 
     // TODO: this is not very good, piece can return to their original places
-    final isFirstMove =
-        '${pieceCoordinate.x}-${pieceCoordinate.y}' == piece.identifier;
+    final isFirstMove = SharedData.isFirstMove(piece.identifier);
     for (var moveCoord in piece.moveCoords) {
       if (piece.moveCoordsMultiplier(isFirstMove) > 1) {
         moves.addAll(
